@@ -1,6 +1,6 @@
 
 import React from 'react';
-import {Button, View, Text, Image} from 'react-native';
+import {Button, View, Text, Image, StyleSheet} from 'react-native';
 import { StackNavigator } from 'react-navigation';
 
 class DetailsScreen extends React.Component {
@@ -28,12 +28,28 @@ class DetailsScreen extends React.Component {
   
     render() {
         return (
-            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-              <Image style={{width: 50, height: 50}} source={{uri: this.state.event.hero_image_url}}  />
-              <Text>Details Screen</Text>
+            <View style={{ flex: 1, justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'column' }}>
+                <Image style={{
+                  alignSelf: 'center',
+                  height: 150,
+                  width: 150,
+                  borderWidth: 1,
+                  borderRadius: 75,
+                  resizeMode: 'cover'
+                }} source={{uri: this.state.event.hero_image_url}}  />
+              <View style={{ width: '100%' }}>
+                <Text style={textStyles.titleText}>{this.state.event.title}</Text>
+              </View>
             </View>
         );
     }
 }
+
+const textStyles = StyleSheet.create({
+  titleText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});
 
 export default  DetailsScreen

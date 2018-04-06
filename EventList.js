@@ -29,13 +29,15 @@ class EventList extends React.Component {
                         data={events}
                         renderItem={({item}) => (
                           <View style={styles.item}>
-                            <Text>{item.title}</Text>
-                            <View style={{width: 40}} >
+                            <View style={{flexBasis: '80%'}} >
+                              <Text>{item.title}</Text>
+                            </View>
+                            <View style={{flexBasis: '20%'}} >
                                 <Button
-                                    title="-->"
-                                    onPress={() => {
-                                        this.props.navigation.navigate('Details', {id: item._id, eventTitle: item.title})
-                                    }}
+                                  title="-->"
+                                  onPress={() => {
+                                      this.props.navigation.navigate('Details', {id: item._id, eventTitle: item.title})
+                                  }}
                                 />
                             </View>
                           </View>
@@ -59,6 +61,9 @@ const styles = StyleSheet.create({
     backgroundColor: '#4D243D',
     flexDirection: 'row',
     flex: 1,
+    alignItems: 'center',
+    height: 50,
+    marginTop: 2
     
   },
 });
