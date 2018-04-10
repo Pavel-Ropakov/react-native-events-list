@@ -14,6 +14,7 @@
     "eject": "react-native-scripts eject",
     "android": "react-native-scripts android",
     "ios": "react-native-scripts ios",
+    "react-devtools": "react-devtools",
     "test": "jest"
   },
   "jest": {
@@ -22,6 +23,7 @@
   "dependencies": {
     "expo": "^26.0.0",
     "react": "16.3.0-alpha.1",
-    "react-native": "0.54.0"
+    "react-native": "0.54.0",
+    "react-native-elements": "^0.19.1"
   }
 }

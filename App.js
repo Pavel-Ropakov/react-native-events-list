@@ -1,7 +1,7 @@
 import React from 'react';
 import {StackNavigator} from "react-navigation";
-import EventList from "./EventList";
-import Details from "./Details";
+import EventList from "./eventList/EventList";
+import Details from "./details/Details";
 
 export default class App extends React.Component {
     render() {
