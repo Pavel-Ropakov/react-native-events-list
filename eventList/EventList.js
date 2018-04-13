@@ -12,7 +12,7 @@ import {
 import styled from 'styled-components';
 
 export const colorPrimary = '#DC734A';
-const itemHeight = 50
+const itemHeight = 130
 const loader = <ActivityIndicator size="large" color={colorPrimary} />
 
 class EventList extends React.Component {
@@ -104,21 +104,29 @@ class EventList extends React.Component {
             ListFooterComponent={this.onGetFooter.bind(this)}
             // animatedScrollY={this.state.animatedScrollY}
             refreshControl={this.onGetRefreshControl()}
-            renderItem={({item}) => (
-              <View style={styles.item}>
-                <View style={{flexBasis: '80%'}}>
-                  <Text>{item.title}</Text>
+            renderItem={({item}) => {
+              const today = new Date(item.start_date)
+              const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+              const string = today.toLocaleDateString("en-US",options)
+              return (
+                <View style={styles.item}>
+                  <View style={{flexBasis: '60%'}}>
+                    <Text>{item.title}</Text>
+                    <Text>Date: {string}</Text>
+                    <Text>Time: {item.start_time} - {item.finish_time}</Text>
+                  </View>
+                  <View style={{flexBasis: '40%', overflow: 'hidden'}}>
+                    <Image style={{
+                      width: '100%',
+                      height: '100%',
+                      borderBottomRightRadius: 5,
+                      borderTopRightRadius: 5,
+                    }} source={{uri: item.hero_image_url}}/>
+                  </View>
                 </View>
-                <View style={{flexBasis: '20%'}}>
-                  <Button
-                    title="-->"
-                    onPress={() => {
-                      this.props.navigation.navigate('Details', {id: item._id, eventTitle: item.title})
-                    }}
-                  />
-                </View>
-              </View>
-            )}
+              )
+            }
+            }
           />
         }
       </View>
@@ -149,17 +157,22 @@ export const Bacground = styled.View`
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f2f5f8',
     alignItems: 'center',
     justifyContent: 'center',
   },
   item: {
-    backgroundColor: '#4D243D',
+    backgroundColor: 'white',
     flexDirection: 'row',
     flex: 1,
     alignItems: 'center',
     height: itemHeight,
-    marginTop: 2
+    marginTop: 10,
+    marginLeft: 10,
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#d2d5d8',
+    borderRadius: 7
 
   },
 });
