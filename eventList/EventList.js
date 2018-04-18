@@ -7,7 +7,7 @@ import {
   FlatList,
   Image,
   RefreshControl,
-  ActivityIndicator
+  ActivityIndicator, TouchableWithoutFeedback
 } from 'react-native';
 import styled from 'styled-components';
 
@@ -77,7 +77,11 @@ class EventList extends React.Component {
       return null;
     }
 
-    return loader
+    return (
+    <View style={{height: 100, width: '100%', alignItems:'center', justifyContent: 'center'}}>
+      {loader}
+    </View>
+    )
   }
 
 
@@ -97,7 +101,11 @@ class EventList extends React.Component {
             data={events}
             onEndReached={this.onEndReached}
             onEndReachedThreshold={0.5}
-            ListEmptyComponent={loader}
+            ListEmptyComponent={
+              <View style={{height: '100%', width: '100%', alignItems:'center', justifyContent: 'center'}}>
+                {loader}
+              </View>
+            }
             keyExtractor={this.keyExtractor}
 
             getItemLayout={this.onGetItemLayout}
@@ -109,11 +117,19 @@ class EventList extends React.Component {
               const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
               const string = today.toLocaleDateString("en-US",options)
               return (
+                <TouchableWithoutFeedback
+                  onPress={() => {
+                    this.props.navigation.navigate('Details', {id: item._id, eventTitle: item.title})
+                  }}
+                  delayPressOut={100}
+                >
                 <View style={styles.item}>
-                  <View style={{flexBasis: '60%'}}>
-                    <Text>{item.title}</Text>
-                    <Text>Date: {string}</Text>
-                    <Text>Time: {item.start_time} - {item.finish_time}</Text>
+                  <View style={{flexBasis: '60%', flexDirection: 'column', justifyContent: 'space-between'}}>
+                    <Text style={{fontWeight: 'bold', padding: 5}}>{item.title}</Text>
+                    <View style={{flexDirection: 'column', justifyContent: 'center', alignItems: 'center'}}>
+                      <Text>Date: {string}</Text>
+                      <Text>Time: {item.start_time} - {item.finish_time}</Text>
+                    </View>
                   </View>
                   <View style={{flexBasis: '40%', overflow: 'hidden'}}>
                     <Image style={{
@@ -124,6 +140,7 @@ class EventList extends React.Component {
                     }} source={{uri: item.hero_image_url}}/>
                   </View>
                 </View>
+                </TouchableWithoutFeedback>
               )
             }
             }
@@ -165,7 +182,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     flexDirection: 'row',
     flex: 1,
-    alignItems: 'center',
     height: itemHeight,
     marginTop: 10,
     marginLeft: 10,

@@ -1,6 +1,6 @@
 import React from 'react';
 import {StackNavigator} from "react-navigation";
-import EventList from "./eventList/EventList";
+import EventList, {colorPrimary} from "./eventList/EventList";
 import Details from "./details/Details";
 
 export default class App extends React.Component {
@@ -23,11 +23,14 @@ const RootStack = StackNavigator(
       /* The header config from HomeScreen is now here */
       navigationOptions: {
         headerStyle: {
-          backgroundColor: '#f4511e',
+          backgroundColor: 'white',
         },
-        headerTintColor: '#fff',
+        headerTintColor: colorPrimary,
         headerTitleStyle: {
           fontWeight: 'bold',
+          textAlign: 'center',
+          width: '100%',
+          marginHorizontal: 0
         },
       },
     }
