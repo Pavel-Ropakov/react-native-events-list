@@ -1,7 +1,7 @@
-
 import React from 'react';
-import {Button, View, Text, Image, StyleSheet, Linking} from 'react-native';
-import { StackNavigator } from 'react-navigation';
+import {Button, View, Text, StyleSheet, Linking, Dimensions, Image, ScrollView} from 'react-native';
+import HTML from "react-native-render-html";
+import * as uuid from 'uuid'
 
 class DetailsScreen extends React.Component {
   constructor(props) {
@@ -25,6 +25,19 @@ class DetailsScreen extends React.Component {
         title: params ? params.eventTitle : 'Details',
       }
     };
+
+
+  renderers = {
+    img: (attribs, children, cssStyles, { key }) => {
+      const src = attribs.src
+      const uri = src[0] === '/' ? `https://events.dev.by${src}` : src;
+      return  (
+        <View style={{flexDirection: 'row', justifyContent:'center', height: 100}}>
+          <Image key={key} style={{width: '100%', height: '100%'}} source={{uri}}/>
+        </View>
+        )
+    },
+  };
   
     render() {
       const {event} = this.state
@@ -34,7 +47,8 @@ class DetailsScreen extends React.Component {
       const startdate = start.toLocaleDateString("en-US",options)
       const enddate = end.toLocaleDateString("en-US",options)
         return (
-            <View style={{ flex: 1, justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'column', paddingTop: 20 }}>
+          <ScrollView>
+            <View style={{ flex: 1, justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'column', paddingTop: 20}}>
                 <Image style={{
                   alignSelf: 'center',
                   height: 150,
@@ -54,8 +68,32 @@ class DetailsScreen extends React.Component {
                       onPress={() => Linking.openURL(event.link)}>
                   Open in browser
                 </Text>
+                <Text style={textStyles.titleText}>
+                  More info:
+                </Text>
+                <View style={{ width: '90%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', margin: 'auto', marginTop: 20, marginBottom: 20, padding: 10,
+                  borderWidth: 1,
+                  borderColor: '#d2d5d8',
+                  backgroundColor: 'white',
+                  borderRadius: 7
+                }}>
+                {
+                  event.content &&
+                    <HTML 
+                      renderers={this.renderers}
+                      html={event.content}
+                      imagesMaxWidth={Dimensions.get('window').width}
+                      baseFontStyle={{
+                        color: 'rgb(51, 51, 51)',
+                        fontSize: 14,
+                      }}
+                      allowedStyles={[]}
+                    />
+                }
+                </View>
               </View>
             </View>
+          </ScrollView>
         );
     }
 }

@@ -1,5 +1,17 @@
 {
   "expo": {
-    "sdkVersion": "26.0.0"
+    "sdkVersion": "26.0.0",
+    "name": "Events Board",
+    "icon": "./icon.png",
+    "version": "1.0.0",
+    "slug": "belarusian-it-events-board",
+    "orientation": "portrait",
+    "ios": {
+      "bundleIdentifier": "com.kokoko.events"
+    },
+    "android": {
+      "package": "com.kokoko.events",
+      "permissions": []
+    }
   }
 }
