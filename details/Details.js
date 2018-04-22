@@ -1,7 +1,8 @@
 import React from 'react';
 import {Button, View, Text, StyleSheet, Linking, Dimensions, Image, ScrollView} from 'react-native';
 import HTML from "react-native-render-html";
-import * as uuid from 'uuid'
+import { MapView } from 'expo';
+
 
 class DetailsScreen extends React.Component {
   constructor(props) {
@@ -91,6 +92,16 @@ class DetailsScreen extends React.Component {
                     />
                 }
                 </View>
+
+                      <MapView
+                          style={{ width: 200, height: 200}}
+                          initialRegion={{
+                              latitude: 37.78825,
+                              longitude: -122.4324,
+                              latitudeDelta: 0.0922,
+                              longitudeDelta: 0.0421,
+                          }}
+                      />
               </View>
             </View>
           </ScrollView>

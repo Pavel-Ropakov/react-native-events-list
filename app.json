@@ -11,7 +11,12 @@
     },
     "android": {
       "package": "com.kokoko.events",
-      "permissions": []
+      "permissions": [],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyAR7M4OOntC16YbkmtEXbfcyCRGt8P7XUg"
+        }
+      }
     }
   }
 }

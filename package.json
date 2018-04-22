@@ -3,7 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "devDependencies": {
+    "@storybook/addon-actions": "^3.4.2",
+    "@storybook/addon-links": "^3.4.2",
+    "@storybook/addons": "^3.4.2",
+    "@storybook/react-native": "^3.4.2",
+    "babel-core": "^6.26.0",
+    "babel-runtime": "^6.26.0",
+    "cross-env": "^5.1.4",
     "jest-expo": "26.0.0",
+    "prop-types": "^15.6.1",
+    "react-dom": "16.3.0-alpha.1",
     "react-native-scripts": "1.13.1",
     "react-navigation": "^1.5.8",
     "react-test-renderer": "16.3.0-alpha.1"
@@ -15,7 +24,10 @@
     "android": "react-native-scripts android",
     "ios": "react-native-scripts ios",
     "react-devtools": "react-devtools",
-    "test": "jest"
+    "test": "jest",
+    "storybook": "storybook start -p 7007",
+    "storybook:ios": "cross-env REACT_NATIVE_STORYBOOK=true npm run ios",
+    "storybook:android": "cross-env REACT_NATIVE_STORYBOOK=true npm run android"
   },
   "jest": {
     "preset": "jest-expo"
@@ -26,6 +38,7 @@
     "react-native": "0.54.0",
     "react-native-elements": "^0.19.1",
     "react-native-fontawesome": "^5.7.0",
+    "react-native-maps": "^0.21.0",
     "react-native-render-html": "^3.9.3",
     "styled-components": "^3.2.5",
     "uuid": "^3.2.1"
