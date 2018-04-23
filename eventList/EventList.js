@@ -14,7 +14,7 @@ import styled from 'styled-components';
 
 export const colorPrimary = '#DC734A';
 const itemHeight = 130
-const loader = <ActivityIndicator size="large" color={colorPrimary} />
+export const loader = <ActivityIndicator size="large" color={colorPrimary} />
 
 const AnimatedBackgroundImage = Animated.createAnimatedComponent(Image);
 

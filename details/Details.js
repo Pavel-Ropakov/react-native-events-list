@@ -2,21 +2,35 @@ import React from 'react';
 import {Button, View, Text, StyleSheet, Linking, Dimensions, Image, ScrollView} from 'react-native';
 import HTML from "react-native-render-html";
 import { MapView } from 'expo';
+import {loader} from "../eventList/EventList";
 
 
 class DetailsScreen extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      event: {}
+      event: {},
+      htmlReady: false
     }
     const id = props.navigation.state.params.id
     fetch(`http://events-aggregator-workshop.anadea.co:8080/events/${id}`)
       .then((r) => r.json())
       .then((responseJson) => {
+        if( responseJson.content ) responseJson.content += ' <div class="endOfLine"></div>'
         this.setState({event: responseJson})
       })
+    
+    this.htmlParsingFinished = this.htmlParsingFinished.bind(this)
 
+  }
+
+
+  htmlParsingFinished (a) {
+    // for (let child of a) {
+    //   if (child.attribs && child.attribs.className === 'endOfLine') {
+    //     this.setState({htmlReady : true})
+      // }
+    // }
   }
 
     static navigationOptions = ({ navigation }) => {
@@ -38,7 +52,8 @@ class DetailsScreen extends React.Component {
         </View>
         )
     },
-  };
+  }
+  
   
     render() {
       const {event} = this.state
@@ -49,9 +64,15 @@ class DetailsScreen extends React.Component {
       const enddate = end.toLocaleDateString("en-US",options)
 
       const coordinate = event.geo ? {
-        latitude: parseFloat(event.geo.latitude),
-        longitude: parseFloat(event.geo.longitude),
+        latitude: parseFloat(event.geo.longitude),
+        longitude: parseFloat(event.geo.latitude),
       } : {}
+      
+      const fontStyle = {
+        color: 'rgb(51, 51, 51)',
+        fontSize: 14,
+      }
+      const windth = Dimensions.get('window').width
       
         return (
           <ScrollView>
@@ -84,16 +105,17 @@ class DetailsScreen extends React.Component {
                   backgroundColor: 'white',
                   borderRadius: 7
                 }}>
+                  {/*{*/}
+                    {/*!this.state.htmlReady && loader */}
+                  {/*}*/}
                 {
                   event.content &&
-                    <HTML 
+                    <HTML
+                      onParsed={this.htmlParsingFinished}
                       renderers={this.renderers}
                       html={event.content}
-                      imagesMaxWidth={Dimensions.get('window').width}
-                      baseFontStyle={{
-                        color: 'rgb(51, 51, 51)',
-                        fontSize: 14,
-                      }}
+                      imagesMaxWidth={windth}
+                      baseFontStyle={fontStyle}
                       allowedStyles={[]}
                     />
                 }
