@@ -47,6 +47,12 @@ class DetailsScreen extends React.Component {
       const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
       const startdate = start.toLocaleDateString("en-US",options)
       const enddate = end.toLocaleDateString("en-US",options)
+
+      const coordinate = event.geo ? {
+        latitude: parseFloat(event.geo.latitude),
+        longitude: parseFloat(event.geo.longitude),
+      } : {}
+      
         return (
           <ScrollView>
             <View style={{ flex: 1, justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'column', paddingTop: 20}}>
@@ -93,15 +99,29 @@ class DetailsScreen extends React.Component {
                 }
                 </View>
 
-                      <MapView
-                          style={{ width: 200, height: 200}}
-                          initialRegion={{
-                              latitude: 37.78825,
-                              longitude: -122.4324,
-                              latitudeDelta: 0.0922,
-                              longitudeDelta: 0.0421,
-                          }}
-                      />
+                {
+                  !!event.geo &&
+                  !!event.geo.latitude &&
+                  !!event.geo.longitude && (
+                    <View style={{ width: '100%', height: 200, flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+                      backgroundColor: 'white',
+                    }}>
+    
+                          <MapView
+                              style={{ width: '100%', height: '100%'}}
+                              initialRegion={{
+                                ...coordinate,
+                                latitudeDelta: 0.0043,
+                                longitudeDelta: 0.0034,
+                              }}
+                          >
+                            <MapView.Marker
+                              coordinate={coordinate}
+                            />
+                          </MapView>
+                    </View>
+                  )
+                }
               </View>
             </View>
           </ScrollView>
