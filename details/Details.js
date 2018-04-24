@@ -1,9 +1,48 @@
 import React from 'react';
 import {Button, View, Text, StyleSheet, Linking, Dimensions, Image, ScrollView} from 'react-native';
-import HTML from "react-native-render-html";
-import { MapView } from 'expo';
-import {loader} from "../eventList/EventList";
+import {MapView} from 'expo';
+import Html from "./html";
 
+const mapContainer = {
+  width: '100%', height: 200, flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+  backgroundColor: 'white',
+}
+
+const fullWidth = {width: '100%', height: '100%'}
+
+const htmlContainer = {
+  width: '90%',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  margin: 'auto',
+  marginTop: 20,
+  marginBottom: 20,
+  padding: 10,
+  borderWidth: 1,
+  borderColor: '#d2d5d8',
+  backgroundColor: 'white',
+  borderRadius: 7
+}
+
+const imgStyle = {
+  alignSelf: 'center',
+  height: 150,
+  width: 150,
+  borderWidth: 1,
+  borderRadius: 75,
+  resizeMode: 'cover'
+}
+
+const containerStyles = {
+  flex: 1,
+  justifyContent: 'flex-start',
+  alignItems: 'center',
+  flexDirection: 'column',
+  paddingTop: 20
+}
+
+const linkStyle = {color: 'blue'}
 
 class DetailsScreen extends React.Component {
   constructor(props) {
@@ -16,139 +55,81 @@ class DetailsScreen extends React.Component {
     fetch(`http://events-aggregator-workshop.anadea.co:8080/events/${id}`)
       .then((r) => r.json())
       .then((responseJson) => {
-        if( responseJson.content ) responseJson.content += ' <div class="endOfLine"></div>'
         this.setState({event: responseJson})
       })
+  }
+
+  render() {
+    const {event} = this.state
+
+    const start = new Date(event.start_date)
+    const end = new Date(event.finish_date)
+    const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'};
+    const startdate = start.toLocaleDateString("en-US", options)
+    const enddate = end.toLocaleDateString("en-US", options)
+
+    const coordinate = event.geo ? {
+      latitude: parseFloat(event.geo.longitude),
+      longitude: parseFloat(event.geo.latitude),
+    } : {}
     
-    this.htmlParsingFinished = this.htmlParsingFinished.bind(this)
+    const imgUri = {uri: event.hero_image_url}
 
-  }
+    return (
+      <ScrollView>
+        <View style={containerStyles}>
+          <Image style={imgStyle} source={imgUri} />
+          
+          <Text style={textStyles.titleText}>{event.title}</Text>
+          <Text>Start: {`${startdate} ${event.start_time}`}</Text>
+          <Text>End: {`${enddate} ${event.finish_time}`}</Text>
+          <Text>Phone: {event.phone_number}</Text>
+          <Text>Adress: {event.address}</Text>
+          <Text>Price: {event.price}</Text>
+          <Text style={linkStyle} onPress={() => Linking.openURL(event.link)}>
+            Open in browser
+          </Text>
+          <Text style={textStyles.titleText}>
+            More info:
+          </Text>
 
+          <View style={htmlContainer}>
+            <Html content={event.content}/>
+          </View>
 
-  htmlParsingFinished (a) {
-    // for (let child of a) {
-    //   if (child.attribs && child.attribs.className === 'endOfLine') {
-    //     this.setState({htmlReady : true})
-      // }
-    // }
-  }
-
-    static navigationOptions = ({ navigation }) => {
-      const { params } = navigation.state;
-  
-      return {
-        title: params ? params.eventTitle : 'Details',
-      }
-    };
-
-
-  renderers = {
-    img: (attribs, children, cssStyles, { key }) => {
-      const src = attribs.src
-      const uri = src[0] === '/' ? `https://events.dev.by${src}` : src;
-      return  (
-        <View style={{flexDirection: 'row', justifyContent:'center', height: 100}}>
-          <Image key={key} style={{width: '100%', height: '100%'}} source={{uri}}/>
-        </View>
-        )
-    },
-  }
-  
-  
-    render() {
-      const {event} = this.state
-      const start = new Date(event.start_date)
-      const end = new Date(event.finish_date)
-      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-      const startdate = start.toLocaleDateString("en-US",options)
-      const enddate = end.toLocaleDateString("en-US",options)
-
-      const coordinate = event.geo ? {
-        latitude: parseFloat(event.geo.longitude),
-        longitude: parseFloat(event.geo.latitude),
-      } : {}
-      
-      const fontStyle = {
-        color: 'rgb(51, 51, 51)',
-        fontSize: 14,
-      }
-      const windth = Dimensions.get('window').width
-      
-        return (
-          <ScrollView>
-            <View style={{ flex: 1, justifyContent: 'flex-start', alignItems: 'center', flexDirection: 'column', paddingTop: 20}}>
-                <Image style={{
-                  alignSelf: 'center',
-                  height: 150,
-                  width: 150,
-                  borderWidth: 1,
-                  borderRadius: 75,
-                  resizeMode: 'cover'
-                }} source={{uri: this.state.event.hero_image_url}}  />
-              <View style={{ width: '100%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', paddingTop: 20 }}>
-                <Text style={textStyles.titleText}>{event.title}</Text>
-                <Text>Start: {`${startdate} ${event.start_time}`}</Text>
-                <Text>End: {`${enddate} ${event.finish_time}`}</Text>
-                <Text>Phone: {event.phone_number}</Text>
-                <Text>Adress: {event.address}</Text>
-                <Text>Price: {event.price}</Text>
-                <Text style={{color: 'blue'}}
-                      onPress={() => Linking.openURL(event.link)}>
-                  Open in browser
-                </Text>
-                <Text style={textStyles.titleText}>
-                  More info:
-                </Text>
-                <View style={{ width: '90%', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', margin: 'auto', marginTop: 20, marginBottom: 20, padding: 10,
-                  borderWidth: 1,
-                  borderColor: '#d2d5d8',
-                  backgroundColor: 'white',
-                  borderRadius: 7
-                }}>
-                  {/*{*/}
-                    {/*!this.state.htmlReady && loader */}
-                  {/*}*/}
-                {
-                  event.content &&
-                    <HTML
-                      onParsed={this.htmlParsingFinished}
-                      renderers={this.renderers}
-                      html={event.content}
-                      imagesMaxWidth={windth}
-                      baseFontStyle={fontStyle}
-                      allowedStyles={[]}
-                    />
-                }
-                </View>
-
-                {
-                  !!event.geo &&
-                  !!event.geo.latitude &&
-                  !!event.geo.longitude && (
-                    <View style={{ width: '100%', height: 200, flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
-                      backgroundColor: 'white',
-                    }}>
-    
-                          <MapView
-                              style={{ width: '100%', height: '100%'}}
-                              initialRegion={{
-                                ...coordinate,
-                                latitudeDelta: 0.0043,
-                                longitudeDelta: 0.0034,
-                              }}
-                          >
-                            <MapView.Marker
-                              coordinate={coordinate}
-                            />
-                          </MapView>
-                    </View>
-                  )
-                }
+          {
+            !!event.geo &&
+            !!event.geo.latitude &&
+            !!event.geo.longitude && (
+              <View style={mapContainer}>
+                <MapView
+                  style={fullWidth}
+                  initialRegion={{
+                    ...coordinate,
+                    latitudeDelta: 0.0043,
+                    longitudeDelta: 0.0034,
+                  }}
+                >
+                  <MapView.Marker
+                    coordinate={coordinate}
+                  />
+                </MapView>
               </View>
-            </View>
-          </ScrollView>
-        );
+            )
+          }
+        </View>
+      </ScrollView>
+    );
+  }
+
+
+  static navigationOptions = ({navigation}) => {
+    const {params} = navigation.state;
+    debugger
+    return {
+      title: params ? params.eventTitle : 'Details',
     }
+  }
 }
 
 const textStyles = StyleSheet.create({
@@ -156,6 +137,6 @@ const textStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
-});
+})
 
-export default  DetailsScreen
+export default DetailsScreen
