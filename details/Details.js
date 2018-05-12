@@ -2,6 +2,8 @@ import React from 'react';
 import {Button, View, Text, StyleSheet, Linking, Dimensions, Image, ScrollView} from 'react-native';
 import {MapView} from 'expo';
 import Html from "./html";
+import {storage} from "../index";
+import * as Alert from "react-native/Libraries/Alert/Alert";
 
 const mapContainer = {
   width: '100%', height: 200, flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
@@ -51,13 +53,36 @@ class DetailsScreen extends React.Component {
       event: {},
       htmlReady: false
     }
-    const id = props.navigation.state.params.id
-    fetch(`http://events-aggregator-workshop.anadea.co:8080/events/${id}`)
-      .then((r) => r.json())
-      .then((responseJson) => {
-        this.setState({event: responseJson})
-      })
   }
+
+
+    componentDidMount() {
+      this.onFetchEvent();
+    }
+
+    onFetchEvent () {
+        const { id } = this.props.navigation.state.params;
+        debugger
+        try {
+            storage.load({
+                id,
+                key: 'event',
+            }).then((data) => {
+
+                this.setState({
+                    event: data
+                });
+            })
+
+        } catch (err) {
+            Alert.alert(
+                'Error while loading event',
+                [
+                    { text: 'Ok', onPress: this.props.navigation.goBack },
+                ],
+            );
+        }
+    };
 
   render() {
     const {event} = this.state
