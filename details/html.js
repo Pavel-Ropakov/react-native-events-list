@@ -47,6 +47,7 @@ class Html extends React.PureComponent {
         {
           content &&
           <HTML
+            ignoredStyles={['font-family']}
             onParsed={this.htmlParsingFinished}
             renderers={renderers}
             html={content}
