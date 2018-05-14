@@ -3,17 +3,33 @@ import {Button, View, Text, StyleSheet, Linking, Dimensions, Image, ScrollView} 
 import HTML from "react-native-render-html";
 import {compose, withState} from "recompose";
 import {loader as loaderIcon} from '../eventList/EventList'
+import AutoScaledImage from "./AutoScaledImage";
+import { TEXT_TAGS, MIXED_TAGS } from 'react-native-render-html/src/HTMLUtils';
 
-const imgViewStyles = {flexDirection: 'row', justifyContent: 'center', height: 100}
-const imgStyles = {width: '100%', height: '100%'}
+const imgViewStyles = {    justifyContent: 'center',
+  alignItems: 'center',}
+
+const screenWidth = Dimensions.get('window').width
+const contentSize = screenWidth * 0.9 - 20
+
+
+export const TEXT_TAGS_HASH = {
+  undefined: true,
+  ...TEXT_TAGS.reduce((obj, tag) => ({ ...obj, [tag]: true }), {}),
+};
+
+export const MIXED_TAGS_HASH = {
+  ...MIXED_TAGS.reduce((obj, tag) => ({ ...obj, [tag]: true }), {}),
+};
+
 
 const renderers = {
   img: (attribs, children, cssStyles, {key}) => {
     const src = attribs.src
     const uri = src[0] === '/' ? `https://events.dev.by${src}` : src;
     return (
-      <View style={imgViewStyles}>
-        <Image key={key} style={imgStyles} source={{uri}}/>
+      <View key={key} style={imgViewStyles}>
+        <AutoScaledImage maxWidth={contentSize} uri={uri}/>
       </View>
     )
   },
@@ -24,9 +40,77 @@ class Html extends React.PureComponent {
     super(props)
     this.htmlParsingFinished = this.htmlParsingFinished.bind(this)
   }
-  
+
+  static childrenAreTextTags = children =>
+    children.every(
+      node =>
+        TEXT_TAGS_HASH[node.name] ||
+        (MIXED_TAGS_HASH[node.name] && Html.childrenAreTextTags(node.children))
+    );
+
+
   htmlParsingFinished() {
     this.props.setHtmlReady(true)
+  }
+
+  onAlterChildren (node) {
+    const nodeChildren = [];
+
+    if (TEXT_TAGS_HASH[node.name] && !Html.childrenAreTextTags(node.children)) {
+      let child = node.children[0];
+
+      let children = [];
+
+      let wrapperNode = {
+        name: 'p',
+        type: 'tag',
+        next: null,
+        prev: null,
+        parent: node,
+        attribs: {},
+        children,
+      };
+
+      nodeChildren[nodeChildren.length] = wrapperNode;
+
+      while (child !== null) {
+        if (
+          TEXT_TAGS_HASH[child.name] ||
+          (MIXED_TAGS_HASH[child.name] && Html.childrenAreTextTags(child.children))
+        ) {
+          children[children.length] = child;
+          child.parent = wrapperNode;
+          child = child.next;
+        } else {
+          wrapperNode.next = child;
+
+          nodeChildren[nodeChildren.length] = child;
+
+          children = [];
+
+          wrapperNode = {
+            name: 'p',
+            type: 'tag',
+            next: null,
+            prev: child,
+            parent: node,
+            attribs: {},
+            children,
+          };
+
+          const newChild = child.next;
+
+          child.next = wrapperNode;
+          child = newChild;
+
+          nodeChildren[nodeChildren.length] = wrapperNode;
+        }
+      }
+
+      return nodeChildren;
+    }
+
+    return undefined;
   }
 
   render() {
@@ -35,7 +119,7 @@ class Html extends React.PureComponent {
       color: 'rgb(51, 51, 51)',
       fontSize: 14,
     }
-    const width = Dimensions.get('window').width
+    
     const loader = htmlReady === false ? loaderIcon : null
     
 
@@ -47,11 +131,12 @@ class Html extends React.PureComponent {
         {
           content &&
           <HTML
+            alterChildren={this.onAlterChildren}
             ignoredStyles={['font-family']}
             onParsed={this.htmlParsingFinished}
             renderers={renderers}
             html={content}
-            imagesMaxWidth={width}
+            imagesMaxWidth={screenWidth}
             baseFontStyle={fontStyle}
           />
         }

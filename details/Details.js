@@ -62,7 +62,6 @@ class DetailsScreen extends React.Component {
 
     onFetchEvent () {
         const { id } = this.props.navigation.state.params;
-        debugger
         try {
             storage.load({
                 id,
@@ -150,7 +149,6 @@ class DetailsScreen extends React.Component {
 
   static navigationOptions = ({navigation}) => {
     const {params} = navigation.state;
-    debugger
     return {
       title: params ? params.eventTitle : 'Details',
     }
