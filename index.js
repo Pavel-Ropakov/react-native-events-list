@@ -9,7 +9,8 @@ import { AsyncStorage } from 'react-native';
 
 class Index extends React.Component {
     render() {
-        return <RootStack />;
+        return <EventList/>
+        // return <RootStack />;
     }
 }
 

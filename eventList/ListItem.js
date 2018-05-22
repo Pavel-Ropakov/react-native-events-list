@@ -35,7 +35,7 @@ class ListItem extends React.Component {
 
 
   render() {
-    const {item, navigation} = this.props
+    const {item, navigation, open} = this.props
     const animatedStyle = {
       transform: [{scale: this.animatedScale}],
     }
@@ -46,7 +46,7 @@ class ListItem extends React.Component {
     return (
       <TouchableWithoutFeedback
         onPress={() => {
-          navigation.navigate('Details', {id: item._id, eventTitle: item.title})
+          open({id: item._id, eventTitle: item.title})
         }}
         onPressIn={() => this.onPressIn()}
         onPressOut={() => this.onPressOut()}
@@ -61,7 +61,11 @@ class ListItem extends React.Component {
             </View>
           </View>
           <View style={{flexBasis: '40%', overflow: 'hidden'}}>
-            <Image style={{
+            <Image
+              ref={(i, a, b) => {
+                this.props.onImageRef(item, i);
+              }}
+              style={{
               width: '100%',
               height: '100%',
               borderBottomRightRadius: 5,

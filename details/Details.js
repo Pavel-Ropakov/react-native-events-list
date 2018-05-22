@@ -61,7 +61,8 @@ class DetailsScreen extends React.Component {
     }
 
     onFetchEvent () {
-        const { id } = this.props.navigation.state.params;
+        // const { id } = this.props.navigation.state.params;
+        const { id } = this.props.params;
         try {
             storage.load({
                 id,
@@ -100,7 +101,7 @@ class DetailsScreen extends React.Component {
     const imgUri = {uri: event.hero_image_url}
 
     return (
-      <ScrollView>
+      <ScrollView style={[StyleSheet.absoluteFill]}>
         <View style={containerStyles}>
           <Image style={imgStyle} source={imgUri} />
           

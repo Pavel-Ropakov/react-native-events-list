@@ -11,6 +11,8 @@ import {
   ActivityIndicator, TouchableWithoutFeedback
 } from 'react-native';
 import ListItem from "./ListItem";
+import DetailsScreen from "../details/Details";
+import Transition from "./Transition";
 
 export const colorPrimary = '#DC734A';
 const itemHeight = 130
@@ -26,8 +28,10 @@ class EventList extends React.Component {
       loading: false,
       refreshing: false,
       page: null,
+      openProgress: new Animated.Value(0),
       touchedId: null
     }
+    this._images = {}
     this.fetchInitialData()
     
   }
@@ -87,6 +91,10 @@ class EventList extends React.Component {
     )
   }
 
+  onImageRef = (photo, imageRef) => {
+    this._images[photo._id] = imageRef;
+  };
+
   onGetItemLayout = (_, index) => {
     return {length: itemHeight, offset: itemHeight * index, index};
   }
@@ -111,9 +119,29 @@ class EventList extends React.Component {
             ListFooterComponent={this.onGetFooter.bind(this)}
             refreshControl={this.onGetRefreshControl()}
             renderItem={({item}) => (
-              <ListItem item={item} navigation={this.props.navigation}/> 
+              <ListItem onImageRef={this.onImageRef} open={(obj) => {
+                this.state.openProgress.interpolate({
+                  inputRange: [0.005, 0.01],
+                  outputRange: [1, 0]
+                })
+                this.setState({active: obj, isAnimating: true })
+                Animated.timing(this.state.openProgress, {
+                  toValue: 1,
+                  duration: 300,
+                  useNativeDriver: true
+                }).start(() => {
+                  this.setState({ isAnimating: false });
+                });
+              }} item={item} navigation={this.props.navigation}/> 
             )}
           />
+        <Transition
+          openProgress={this.state.openProgress}
+          photo={this.state.active}
+          sourceImageRefs={this._images}
+          isAnimating={this.state.isAnimating}
+        />
+        {this.state.active && <DetailsScreen params={this.state.active}/>}
       </View>
     );
   }
