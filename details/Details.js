@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, View, Text, StyleSheet, Linking, Dimensions, Image, ScrollView} from 'react-native';
+import {Button, View, Text, StyleSheet, Linking, Dimensions, Image, ScrollView, TouchableOpacity, Animated} from 'react-native';
 import {MapView} from 'expo';
 import Html from "./html";
 import {storage} from "../index";
@@ -9,6 +9,8 @@ const mapContainer = {
   width: '100%', height: 200, flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
   backgroundColor: 'white',
 }
+
+const maxWidth = Dimensions.get('window').width;
 
 const fullWidth = {width: '100%', height: '100%'}
 
@@ -29,11 +31,13 @@ const htmlContainer = {
 
 const imgStyle = {
   alignSelf: 'center',
-  height: 150,
-  width: 150,
-  borderWidth: 1,
-  borderRadius: 75,
-  resizeMode: 'cover'
+  // height: 150,
+  // width: 150,
+  // borderWidth: 1,
+  // borderRadius: 75,
+  resizeMode: 'cover',
+  width: maxWidth,
+  height: 300,
 }
 
 const containerStyles = {
@@ -41,7 +45,7 @@ const containerStyles = {
   justifyContent: 'flex-start',
   alignItems: 'center',
   flexDirection: 'column',
-  paddingTop: 20
+  paddingTop: 0
 }
 
 const linkStyle = {color: 'blue'}
@@ -50,6 +54,7 @@ class DetailsScreen extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
+      show: false,
       event: {},
       htmlReady: false
     }
@@ -84,8 +89,16 @@ class DetailsScreen extends React.Component {
         }
     };
 
+  componentWillReceiveProps(nextProps) {
+    const { isAnimating } = nextProps;
+    if (!isAnimating && this.props.isAnimating !== isAnimating) {
+      this.setState({show : true})
+    }
+  }
+
   render() {
     const {event} = this.state
+    const {openProgress} = this.props
 
     const start = new Date(event.start_date)
     const end = new Date(event.finish_date)
@@ -103,45 +116,8 @@ class DetailsScreen extends React.Component {
     return (
       <ScrollView style={[StyleSheet.absoluteFill]}>
         <View style={containerStyles}>
-          <Image style={imgStyle} source={imgUri} />
-          
-          <Text style={textStyles.titleText}>{event.title}</Text>
-          <Text>Start: {`${startdate} ${event.start_time}`}</Text>
-          <Text>End: {`${enddate} ${event.finish_time}`}</Text>
-          <Text>Phone: {event.phone_number}</Text>
-          <Text>Adress: {event.address}</Text>
-          <Text>Price: {event.price}</Text>
-          <Text style={linkStyle} onPress={() => Linking.openURL(event.link)}>
-            Open in browser
-          </Text>
-          <Text style={textStyles.titleText}>
-            More info:
-          </Text>
+          {this.state.show  && <Image style={imgStyle} source={imgUri} />}
 
-          <View style={htmlContainer}>
-            <Html content={event.content}/>
-          </View>
-
-          {
-            !!event.geo &&
-            !!event.geo.latitude &&
-            !!event.geo.longitude && (
-              <View style={mapContainer}>
-                <MapView
-                  style={fullWidth}
-                  initialRegion={{
-                    ...coordinate,
-                    latitudeDelta: 0.0043,
-                    longitudeDelta: 0.0034,
-                  }}
-                >
-                  <MapView.Marker
-                    coordinate={coordinate}
-                  />
-                </MapView>
-              </View>
-            )
-          }
         </View>
       </ScrollView>
     );
@@ -155,6 +131,34 @@ class DetailsScreen extends React.Component {
     }
   }
 }
+
+const styles = StyleSheet.create({
+  title: {
+    color: '#000',
+    fontSize: 22,
+    fontWeight: '600',
+    // fontFamily: 'Avenir Next',
+    lineHeight: 50
+  },
+  description: {
+    color: '#333',
+    fontSize: 14
+    // fontFamily: 'Avenir Next'
+  },
+  body: { flex: 1, padding: 15 },
+  closeText: { color: 'white', backgroundColor: 'transparent' },
+  closeButton: {
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    borderWidth: 1,
+    borderColor: 'white',
+    padding: 10,
+    paddingTop: 10,
+    paddingBottom: 10,
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'white',
+    borderRadius: 5
+  }
+});
 
 const textStyles = StyleSheet.create({
   titleText: {

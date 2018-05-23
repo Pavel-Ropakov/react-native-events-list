@@ -120,6 +120,7 @@ class EventList extends React.Component {
             refreshControl={this.onGetRefreshControl()}
             renderItem={({item}) => (
               <ListItem onImageRef={this.onImageRef} open={(obj) => {
+                this.setState({openProgress: new Animated.Value(0)} , () => {
                 this.state.openProgress.interpolate({
                   inputRange: [0.005, 0.01],
                   outputRange: [1, 0]
@@ -127,11 +128,12 @@ class EventList extends React.Component {
                 this.setState({active: obj, isAnimating: true })
                 Animated.timing(this.state.openProgress, {
                   toValue: 1,
-                  duration: 300,
+                  duration: 1000,
                   useNativeDriver: true
                 }).start(() => {
                   this.setState({ isAnimating: false });
                 });
+              })
               }} item={item} navigation={this.props.navigation}/> 
             )}
           />
@@ -141,7 +143,7 @@ class EventList extends React.Component {
           sourceImageRefs={this._images}
           isAnimating={this.state.isAnimating}
         />
-        {this.state.active && <DetailsScreen params={this.state.active}/>}
+        {this.state.active && <DetailsScreen isAnimating={this.state.isAnimating} openProgress={this.state.openProgress} onClose={() => {this.setState({active: null})}} params={this.state.active}/>}
       </View>
     );
   }
