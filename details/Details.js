@@ -56,7 +56,9 @@ class DetailsScreen extends React.Component {
     this.state = {
       show: false,
       event: {},
-      htmlReady: false
+      htmlReady: false,
+      localPhoto: null,
+      showContent: new Animated.Value(0),
     }
   }
 
@@ -67,37 +69,55 @@ class DetailsScreen extends React.Component {
 
     onFetchEvent () {
         // const { id } = this.props.navigation.state.params;
-        const { id } = this.props.params;
-        try {
-            storage.load({
-                id,
-                key: 'event',
-            }).then((data) => {
-
-                this.setState({
-                    event: data
-                });
-            })
-
-        } catch (err) {
-            Alert.alert(
-                'Error while loading event',
-                [
-                    { text: 'Ok', onPress: this.props.navigation.goBack },
-                ],
-            );
+        const { event } = this.props;
+        if (event && event.id) {
+          try {
+              storage.load({
+                  id,
+                  key: 'event',
+              }).then((data) => {
+  
+                  this.setState({
+                      event: data
+                  });
+              })
+  
+          } catch (err) {
+              Alert.alert(
+                  'Error while loading event',
+                  [
+                      { text: 'Ok', onPress: this.props.navigation.goBack },
+                  ],
+              );
+          }
         }
     };
 
   componentWillReceiveProps(nextProps) {
     const { isAnimating } = nextProps;
     if (!isAnimating && this.props.isAnimating !== isAnimating) {
-      this.setState({show : true})
+      this.setState({show: true})
+      this.setState({showContent: new Animated.Value(0)}, () => {
+        this.state.showContent.interpolate({
+          inputRange: [0.005, 0.01],
+          outputRange: [1, 0]
+        })
+        Animated.timing(this.state.showContent, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true
+        }).start();
+      })
     }
+
+    const { photo } = nextProps;
+    if (photo) {
+      this.setState({ localPhoto: photo });
+    } else  this.setState({ localPhoto: null });
   }
 
   render() {
-    const {event} = this.state
+    const {event, localPhoto, showContent} = this.state
     const {openProgress} = this.props
 
     const start = new Date(event.start_date)
@@ -112,15 +132,80 @@ class DetailsScreen extends React.Component {
     } : {}
     
     const imgUri = {uri: event.hero_image_url}
+    debugger
+    if (localPhoto) {
+      return (
+        <ScrollView style={[StyleSheet.absoluteFill]}>
+          <View style={containerStyles}>
+            <Animated.Image style={{
+              width: maxWidth, height: 300, opacity: openProgress.interpolate({
+                inputRange: [0, 0.99, 0.995],
+                outputRange: [0, 0, 1]
+              })
+            }} source={localPhoto.props.source}/>
 
-    return (
-      <ScrollView style={[StyleSheet.absoluteFill]}>
-        <View style={containerStyles}>
-          {this.state.show  && <Image style={imgStyle} source={imgUri} />}
 
-        </View>
-      </ScrollView>
-    );
+            <Animated.View
+              style={[
+                styles.body,
+                {
+                  opacity: showContent,
+                  backgroundColor: '#fff',
+                }
+              ]}
+            >
+
+
+              <TouchableOpacity
+                onPress={() => this.props.onClose()}
+                style={styles.closeButton}
+              >
+                <Text style={styles.closeText}>Close</Text>
+              </TouchableOpacity>
+
+              <Text style={textStyles.titleText}>{event.title}</Text>
+              <Text>Start: {`${startdate} ${event.start_time}`}</Text>
+              <Text>End: {`${enddate} ${event.finish_time}`}</Text>
+              <Text>Phone: {event.phone_number}</Text>
+              <Text>Adress: {event.address}</Text>
+              <Text>Price: {event.price}</Text>
+              <Text style={linkStyle} onPress={() => Linking.openURL(event.link)}>
+                Open in browser
+              </Text>
+              <Text style={textStyles.titleText}>
+                More info:
+              </Text>
+
+              <View style={htmlContainer}>
+                <Html content={event.content}/>
+              </View>
+
+              {
+                !!event.geo &&
+                !!event.geo.latitude &&
+                !!event.geo.longitude && (
+                  <View style={mapContainer}>
+                    <MapView
+                      style={fullWidth}
+                      initialRegion={{
+                        ...coordinate,
+                        latitudeDelta: 0.0043,
+                        longitudeDelta: 0.0034,
+                      }}
+                    >
+                      <MapView.Marker
+                        coordinate={coordinate}
+                      />
+                    </MapView>
+                  </View>
+                )
+              }
+            </Animated.View>
+          </View>
+        </ScrollView>
+      );
+    }
+    return <View />;
   }
 
 

@@ -143,7 +143,14 @@ class EventList extends React.Component {
           sourceImageRefs={this._images}
           isAnimating={this.state.isAnimating}
         />
-        {this.state.active && <DetailsScreen isAnimating={this.state.isAnimating} openProgress={this.state.openProgress} onClose={() => {this.setState({active: null})}} params={this.state.active}/>}
+        
+          <DetailsScreen
+            isAnimating={this.state.isAnimating}
+            openProgress={this.state.openProgress}
+            onClose={() => {this.setState({active: null})}}
+            event={this.state.active}
+            photo={this.state.active && this.state.active.id ? this._images[this.state.active.id] : null}
+          />
       </View>
     );
   }
