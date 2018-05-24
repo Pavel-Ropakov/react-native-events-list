@@ -1,4 +1,5 @@
 import React from 'react';
+import Expo from 'expo';
 import {
   Button,
   View,
@@ -20,7 +21,7 @@ export const loader = <ActivityIndicator size="large" color={colorPrimary}/>
 const footerStyle = {height: 100, width: '100%', alignItems: 'center', justifyContent: 'center'}
 const loaderStyles = {height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center'}
 
-class EventList extends React.Component {
+class EventList extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
@@ -32,6 +33,8 @@ class EventList extends React.Component {
       touchedId: null
     }
     this._images = {}
+    
+    this.openListItem = this.openListItem.bind(this)
     this.fetchInitialData()
     
   }
@@ -100,6 +103,23 @@ class EventList extends React.Component {
   }
 
   keyExtractor = item => item._id;
+  
+  openListItem = obj => {
+    this.setState({openProgress: new Animated.Value(0)} , () => {
+      this.state.openProgress.interpolate({
+        inputRange: [0.005, 0.01],
+        outputRange: [1, 0]
+      })
+      this.setState({active: obj, isAnimating: true })
+      Animated.timing(this.state.openProgress, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true
+      }).start(() => {
+        this.setState({ isAnimating: false });
+      });
+    })
+  }
 
   render() {
     const {events} = this.state
@@ -118,24 +138,9 @@ class EventList extends React.Component {
             getItemLayout={this.onGetItemLayout}
             ListFooterComponent={this.onGetFooter.bind(this)}
             refreshControl={this.onGetRefreshControl()}
-            renderItem={({item}) => (
-              <ListItem onImageRef={this.onImageRef} open={(obj) => {
-                this.setState({openProgress: new Animated.Value(0)} , () => {
-                this.state.openProgress.interpolate({
-                  inputRange: [0.005, 0.01],
-                  outputRange: [1, 0]
-                })
-                this.setState({active: obj, isAnimating: true })
-                Animated.timing(this.state.openProgress, {
-                  toValue: 1,
-                  duration: 1000,
-                  useNativeDriver: true
-                }).start(() => {
-                  this.setState({ isAnimating: false });
-                });
-              })
-              }} item={item} navigation={this.props.navigation}/> 
-            )}
+            renderItem={({item}) => {
+              return <ListItem key={item._id} onImageRef={this.onImageRef} open={this.openListItem} item={item}/> 
+            }}
           />
         <Transition
           openProgress={this.state.openProgress}
@@ -144,24 +149,22 @@ class EventList extends React.Component {
           isAnimating={this.state.isAnimating}
         />
         
-          <DetailsScreen
-            isAnimating={this.state.isAnimating}
-            openProgress={this.state.openProgress}
-            onClose={() => {this.setState({active: null})}}
-            event={this.state.active}
-            photo={this.state.active && this.state.active.id ? this._images[this.state.active.id] : null}
-          />
+        <DetailsScreen
+          isAnimating={this.state.isAnimating}
+          openProgress={this.state.openProgress}
+          onClose={() => {this.setState({active: null})}}
+          event={this.state.active}
+          photo={this.state.active && this.state.active.id ? this._images[this.state.active.id] : null}
+        />
       </View>
     );
   }
 
-  static navigationOptions = {
-    title: 'Events',
-  };
 }
 
 const styles = StyleSheet.create({
   container: {
+    marginTop: Expo.Constants.statusBarHeight,
     flex: 1,
     backgroundColor: '#f2f5f8',
     alignItems: 'center',

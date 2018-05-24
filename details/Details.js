@@ -4,6 +4,8 @@ import {MapView} from 'expo';
 import Html from "./html";
 import {storage} from "../index";
 import * as Alert from "react-native/Libraries/Alert/Alert";
+import { Ionicons } from '@expo/vector-icons';
+import Expo from "expo";
 
 const mapContainer = {
   width: '100%', height: 200, flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
@@ -50,7 +52,7 @@ const containerStyles = {
 
 const linkStyle = {color: 'blue'}
 
-class DetailsScreen extends React.Component {
+class DetailsScreen extends React.PureComponent {
   constructor(props) {
     super(props)
     this.state = {
@@ -60,41 +62,44 @@ class DetailsScreen extends React.Component {
       localPhoto: null,
       showContent: new Animated.Value(0),
     }
+    this.onFetchEvent = this.onFetchEvent.bind(this)
   }
 
-
-    componentDidMount() {
-      this.onFetchEvent();
-    }
-
-    onFetchEvent () {
-        // const { id } = this.props.navigation.state.params;
-        const { event } = this.props;
+  onFetchEvent (event) {
         if (event && event.id) {
-          try {
-              storage.load({
-                  id,
-                  key: 'event',
-              }).then((data) => {
-  
-                  this.setState({
-                      event: data
-                  });
-              })
-  
-          } catch (err) {
-              Alert.alert(
-                  'Error while loading event',
-                  [
-                      { text: 'Ok', onPress: this.props.navigation.goBack },
-                  ],
-              );
-          }
+          fetch(`http://events-aggregator-workshop.anadea.co:8080/events/${event.id}`)
+            .then((r) => r.json())
+            .then((responseJson) => {
+              this.setState({event: responseJson})
+            })
+          // try {
+          //     storage.load({
+          //         id: event.id,
+          //         key: 'event',
+          //     }).then((data) => {
+          //
+          //         this.setState({
+          //             event: data
+          //         });
+          //     })
+          //
+          // } catch (err) {
+          //   debugger
+          //     // Alert.alert(
+          //     //     'Error while loading event',
+          //     //     [
+          //     //         { text: 'Ok', onPress: this.props.onClose },
+          //     //     ],
+          //     // );
+          // }
         }
     };
 
   componentWillReceiveProps(nextProps) {
     const { isAnimating } = nextProps;
+    if (isAnimating && this.props.isAnimating !== isAnimating) {
+      this.onFetchEvent(nextProps.event);
+    }
     if (!isAnimating && this.props.isAnimating !== isAnimating) {
       this.setState({show: true})
       this.setState({showContent: new Animated.Value(0)}, () => {
@@ -132,10 +137,11 @@ class DetailsScreen extends React.Component {
     } : {}
     
     const imgUri = {uri: event.hero_image_url}
-    debugger
+    const containerScrollStyles = StyleSheet.absoluteFill
+    containerScrollStyles.marginTop = Expo.Constants.statusBarHeight
     if (localPhoto) {
       return (
-        <ScrollView style={[StyleSheet.absoluteFill]}>
+        <ScrollView style={[containerScrollStyles]}>
           <View style={containerStyles}>
             <Animated.Image style={{
               width: maxWidth, height: 300, opacity: openProgress.interpolate({
@@ -155,14 +161,21 @@ class DetailsScreen extends React.Component {
               ]}
             >
 
-
               <TouchableOpacity
                 onPress={() => this.props.onClose()}
-                style={styles.closeButton}
+                style={{
+                  alignItems:'center',
+                  justifyContent:'center',
+                  width:50,
+                  height:50,
+                  backgroundColor:'#fff',
+                  borderRadius:100,
+                }}
               >
-                <Text style={styles.closeText}>Close</Text>
+                <Ionicons name="md-arrow-round-back" size={20} color="black" />
               </TouchableOpacity>
-
+              
+              
               <Text style={textStyles.titleText}>{event.title}</Text>
               <Text>Start: {`${startdate} ${event.start_time}`}</Text>
               <Text>End: {`${enddate} ${event.finish_time}`}</Text>
@@ -230,7 +243,7 @@ const styles = StyleSheet.create({
     fontSize: 14
     // fontFamily: 'Avenir Next'
   },
-  body: { flex: 1, padding: 15 },
+  body: { width: maxWidth, padding: 15 },
   closeText: { color: 'white', backgroundColor: 'transparent' },
   closeButton: {
     backgroundColor: 'rgba(0,0,0,0.5)',
@@ -253,3 +266,4 @@ const textStyles = StyleSheet.create({
 })
 
 export default DetailsScreen
+

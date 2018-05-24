@@ -12,7 +12,7 @@ import {
 
 const maxWidth = Dimensions.get('window').width;
 
-export default class Transition extends React.Component {
+export default class Transition extends React.PureComponent {
   state = {
     destinationDimension: {
       width: maxWidth,
@@ -27,6 +27,28 @@ export default class Transition extends React.Component {
       pageY: 0
     }
   };
+
+  //
+  // componentWillReceiveProps(nextProps) {
+  //   const { photo, sourceImageRefs } = nextProps;
+  //
+  //   if (photo) {
+  //     const sourceImageRef = sourceImageRefs[photo.id];
+  //     sourceImageRef
+  //       .getNode()
+  //       .measure((soruceX, soruceY, width, height, pageX, pageY) => {
+  //         this.setState({
+  //           sourceDimension: {
+  //             width,
+  //             height,
+  //             pageX,
+  //             pageY
+  //           },
+  //           photo
+  //         });
+  //       });
+  //   }
+  // }
 
   componentWillReceiveProps(nextProps) {
     const { photo, sourceImageRefs } = nextProps;
@@ -45,6 +67,8 @@ export default class Transition extends React.Component {
             photo: sourceImageRef
           });
         });
+    } else {
+      this.setState({photo: null})
     }
   }
 
