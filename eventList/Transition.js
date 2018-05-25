@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   Text,
@@ -27,28 +26,6 @@ export default class Transition extends React.PureComponent {
       pageY: 0
     }
   };
-
-  //
-  // componentWillReceiveProps(nextProps) {
-  //   const { photo, sourceImageRefs } = nextProps;
-  //
-  //   if (photo) {
-  //     const sourceImageRef = sourceImageRefs[photo.id];
-  //     sourceImageRef
-  //       .getNode()
-  //       .measure((soruceX, soruceY, width, height, pageX, pageY) => {
-  //         this.setState({
-  //           sourceDimension: {
-  //             width,
-  //             height,
-  //             pageX,
-  //             pageY
-  //           },
-  //           photo
-  //         });
-  //       });
-  //   }
-  // }
 
   componentWillReceiveProps(nextProps) {
     const { photo, sourceImageRefs } = nextProps;

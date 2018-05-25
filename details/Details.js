@@ -79,31 +79,25 @@ class DetailsScreen extends React.PureComponent {
 
   onFetchEvent (event) {
         if (event && event.id) {
-          fetch(`http://events-aggregator-workshop.anadea.co:8080/events/${event.id}`)
-            .then((r) => r.json())
-            .then((responseJson) => {
-              this.setState({event: responseJson})
-            })
-          // try {
-          //     storage.load({
-          //         id: event.id,
-          //         key: 'event',
-          //     }).then((data) => {
-          //
-          //         this.setState({
-          //             event: data
-          //         });
-          //     })
-          //
-          // } catch (err) {
-          //   debugger
-          //     // Alert.alert(
-          //     //     'Error while loading event',
-          //     //     [
-          //     //         { text: 'Ok', onPress: this.props.onClose },
-          //     //     ],
-          //     // );
-          // }
+          try {
+              storage.load({
+                  id: event.id,
+                  key: 'event',
+              }).then((data) => {
+
+                  this.setState({
+                      event: data
+                  });
+              })
+
+          } catch (err) {
+              Alert.alert(
+                  'Error while loading event',
+                  [
+                      { text: 'Ok', onPress: this.props.onClose },
+                  ],
+              );
+          }
         }
     };
 
@@ -286,14 +280,6 @@ class DetailsScreen extends React.PureComponent {
       );
     }
     return <View />;
-  }
-
-
-  static navigationOptions = ({navigation}) => {
-    const {params} = navigation.state;
-    return {
-      title: params ? params.eventTitle : 'Details',
-    }
   }
 }
 
