@@ -113,7 +113,7 @@ class EventList extends React.PureComponent {
       this.setState({active: obj, isAnimating: true })
       Animated.timing(this.state.openProgress, {
         toValue: 1,
-        duration: 1000,
+        duration: 500,
         useNativeDriver: true
       }).start(() => {
         this.setState({ isAnimating: false });

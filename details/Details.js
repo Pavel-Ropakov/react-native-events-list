@@ -60,10 +60,22 @@ class DetailsScreen extends React.PureComponent {
       event: {},
       htmlReady: false,
       localPhoto: null,
+      x: new Animated.Value(0),
       showContent: new Animated.Value(0),
     }
     this.onFetchEvent = this.onFetchEvent.bind(this)
   }
+
+  slide () {
+    Animated.timing(this.state.x, {
+      toValue: -1000,
+      duration: 500,
+      useNativeDriver: true
+    }).start(() => {
+      this.props.onClose()
+      this.setState({x: new Animated.Value(0)}) 
+    });
+  };
 
   onFetchEvent (event) {
         if (event && event.id) {
@@ -109,7 +121,7 @@ class DetailsScreen extends React.PureComponent {
         })
         Animated.timing(this.state.showContent, {
           toValue: 1,
-          duration: 1000,
+          duration: 300,
           useNativeDriver: true
         }).start();
       })
@@ -123,7 +135,7 @@ class DetailsScreen extends React.PureComponent {
 
   render() {
     const {event, localPhoto, showContent} = this.state
-    const {openProgress} = this.props
+    const {openProgress, isAnimating} = this.props
 
     const start = new Date(event.start_date)
     const end = new Date(event.finish_date)
@@ -132,8 +144,8 @@ class DetailsScreen extends React.PureComponent {
     const enddate = end.toLocaleDateString("en-US", options)
 
     const coordinate = event.geo ? {
-      latitude: parseFloat(event.geo.longitude),
-      longitude: parseFloat(event.geo.latitude),
+      latitude: parseFloat(event.geo.latitude),
+      longitude: parseFloat(event.geo.longitude),
     } : {}
     
     const imgUri = {uri: event.hero_image_url}
@@ -141,81 +153,136 @@ class DetailsScreen extends React.PureComponent {
     containerScrollStyles.marginTop = Expo.Constants.statusBarHeight
     if (localPhoto) {
       return (
-        <ScrollView style={[containerScrollStyles]}>
+        <Animated.ScrollView style={[containerScrollStyles,  {
+          transform: [
+            {
+              translateX: this.state.x
+            }
+          ]
+        }]}>
+
+          <Animated.View
+            style={{
+              position: 'absolute',
+              top: 230,
+              left: 30,
+              opacity: showContent,
+              zIndex: 999,
+            }}
+            pointerEvents={isAnimating ? 'none' : 'auto'}
+          >
+            <TouchableOpacity
+              onPress={() => {
+                this.slide()
+              }}
+              style={{
+                alignItems:'center',
+                justifyContent:'center',
+                width:50,
+                height:50,
+                backgroundColor:'#fff',
+                borderRadius:100,
+              }}
+            >
+              <Ionicons name="md-arrow-round-back" size={20} color="black" />
+            </TouchableOpacity>
+          </Animated.View>
+
+          <Animated.View
+            style={{
+              position: 'absolute',
+              top: 230,
+              right: 30,
+              opacity: showContent,
+              zIndex: 999,
+            }}
+            pointerEvents={isAnimating ? 'none' : 'auto'}
+          >
+            <TouchableOpacity
+              onPress={() => this.props.onClose()}
+              style={{
+                alignItems:'center',
+                justifyContent:'center',
+                width:50,
+                height:50,
+                backgroundColor:'#fff',
+                borderRadius:100,
+              }}
+            >
+              <Ionicons name="md-calendar" size={20} color="black" />
+            </TouchableOpacity>
+          </Animated.View>
+          
+
           <View style={containerStyles}>
+            
             <Animated.Image style={{
               width: maxWidth, height: 300, opacity: openProgress.interpolate({
                 inputRange: [0, 0.99, 0.995],
                 outputRange: [0, 0, 1]
               })
             }} source={localPhoto.props.source}/>
-
-
+            
             <Animated.View
               style={[
                 styles.body,
                 {
                   opacity: showContent,
+                  transform: [
+                    {
+                      translateY: openProgress.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [500, 0]
+                      })
+                    }
+                  ],
                   backgroundColor: '#fff',
                 }
               ]}
             >
-
-              <TouchableOpacity
-                onPress={() => this.props.onClose()}
-                style={{
-                  alignItems:'center',
-                  justifyContent:'center',
-                  width:50,
-                  height:50,
-                  backgroundColor:'#fff',
-                  borderRadius:100,
-                }}
-              >
-                <Ionicons name="md-arrow-round-back" size={20} color="black" />
-              </TouchableOpacity>
-              
-              
-              <Text style={textStyles.titleText}>{event.title}</Text>
-              <Text>Start: {`${startdate} ${event.start_time}`}</Text>
-              <Text>End: {`${enddate} ${event.finish_time}`}</Text>
-              <Text>Phone: {event.phone_number}</Text>
-              <Text>Adress: {event.address}</Text>
-              <Text>Price: {event.price}</Text>
-              <Text style={linkStyle} onPress={() => Linking.openURL(event.link)}>
-                Open in browser
-              </Text>
-              <Text style={textStyles.titleText}>
-                More info:
-              </Text>
-
-              <View style={htmlContainer}>
-                <Html content={event.content}/>
+              <View style={[containerStyles, {margin: 10, marginBottom: 0, textAlign: 'center'}]}>
+                <Text style={textStyles.titleText}>{event.title}</Text>
+                <Text>Start: {`${startdate} ${event.start_time}`}</Text>
+                <Text>End: {`${enddate} ${event.finish_time}`}</Text>
+                <Text>Phone: {event.phone_number}</Text>
+                <Text>Adress: {event.address}</Text>
+                <Text>Price: {event.price}</Text>
+                <Text style={linkStyle} onPress={() => Linking.openURL(event.link)}>
+                  Open in browser
+                </Text>
+                <Text style={textStyles.titleText}>
+                  More info:
+                </Text>
               </View>
-
-              {
-                !!event.geo &&
-                !!event.geo.latitude &&
-                !!event.geo.longitude && (
-                  <View style={mapContainer}>
-                    <MapView
-                      style={fullWidth}
-                      initialRegion={{
-                        ...coordinate,
-                        latitudeDelta: 0.0043,
-                        longitudeDelta: 0.0034,
-                      }}
-                    >
-                      <MapView.Marker
-                        coordinate={coordinate}
-                      />
-                    </MapView>
-                  </View>
-                )
-              }
+              <View style={containerStyles}>
+                <View style={htmlContainer}>
+                  <Html content={event.content}/>
+                </View>
+  
+                {
+                  !!event.geo &&
+                  !!event.geo.latitude &&
+                  !!event.geo.longitude && (
+                    <View style={mapContainer}>
+                      <MapView
+                        style={fullWidth}
+                        initialRegion={{
+                          ...coordinate,
+                          latitudeDelta: 0.0043,
+                          longitudeDelta: 0.0034,
+                        }}
+                      >
+                        <MapView.Marker
+                          coordinate={coordinate}
+                        />
+                      </MapView>
+                    </View>
+                  )
+                }
+              </View>
             </Animated.View>
           </View>
-        </ScrollView>
+        </Animated.ScrollView>
       );
     }
     return <View />;
@@ -243,7 +310,7 @@ const styles = StyleSheet.create({
     fontSize: 14
     // fontFamily: 'Avenir Next'
   },
-  body: { width: maxWidth, padding: 15 },
+  body: { width: maxWidth},
   closeText: { color: 'white', backgroundColor: 'transparent' },
   closeButton: {
     backgroundColor: 'rgba(0,0,0,0.5)',
