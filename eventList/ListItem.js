@@ -16,8 +16,6 @@ export const colorPrimary = '#DC734A';
 const itemHeight = 130
 export const loader = <ActivityIndicator size="large" color={colorPrimary}/>
 
-const AnimatedBackgroundImage = Animated.createAnimatedComponent(Image);
-
 const containerStyle = {flexBasis: '60%', flexDirection: 'column', justifyContent: 'space-between', paddingBottom: 5,}
 const textStyle = {fontWeight: 'bold', padding: 5}
 const timeStyle = {flexDirection: 'row', justifyContent: 'flex-start', paddingLeft: 10, alignItems: 'center'}
@@ -48,26 +46,24 @@ class ListItem extends React.PureComponent {
     springAnimation(this.animatedScale, {toValue: 1});
   }
 
-
   render() {
     const {item, open} = this.props
     const animatedStyle = {
       transform: [{scale: this.animatedScale}],
     }
     const today = new Date(item.start_date)
-    
+
     const string = today.toLocaleDateString("en-US", options)
-    
+
     const imgScr = {uri: item.hero_image_url}
-    
-    
+
     return (
       <TouchableWithoutFeedback
         onPress={() => {
-          open({id: item._id, eventTitle: item.title})
+          open({id: item._id, eventTitle: item.title, image: imgScr})
         }}
-        onPressIn={this.onPressIn}
-        onPressOut={this.onPressOut}
+        // onPressIn={this.onPressIn}
+        // onPressOut={this.onPressOut}
         delayPressOut={100}
       >
         <Animated.View style={[styles.item, animatedStyle, styles.itemAnimated]}>

@@ -9,54 +9,74 @@ import {
   Image,
   Animated,
   RefreshControl,
-  ActivityIndicator, TouchableWithoutFeedback
+  ActivityIndicator,
+  TouchableWithoutFeedback,
 } from 'react-native';
-import ListItem from "./ListItem";
-import DetailsScreen from "../details/Details";
-import Transition from "./Transition";
+import ListItem from './ListItem';
+import DetailsScreen from '../details/Details';
+import Transition from './Transition';
 
 export const colorPrimary = '#DC734A';
-const itemHeight = 130
-export const loader = <ActivityIndicator size="large" color={colorPrimary}/>
-const footerStyle = {height: 100, width: '100%', alignItems: 'center', justifyContent: 'center'}
-const loaderStyles = {height: '100%', width: '100%', alignItems: 'center', justifyContent: 'center'}
+const itemHeight = 130;
+export const loader = <ActivityIndicator size="large" color={colorPrimary}/>;
+const footerStyle = {
+  height: 100,
+  width: '100%',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
+const loaderStyles = {
+  height: '100%',
+  width: '100%',
+  alignItems: 'center',
+  justifyContent: 'center',
+};
 
 class EventList extends React.PureComponent {
-  constructor(props) {
-    super(props)
-    this.state = {
-      events: [],
-      loading: false,
-      refreshing: false,
-      page: null,
-      openProgress: new Animated.Value(0),
-      touchedId: null
-    }
-    this._images = {}
-    
-    this.openListItem = this.openListItem.bind(this)
-    this.fetchInitialData()
-    
+  state = {
+    page: null,
+    events: [],
+    loading: false,
+    touchedId: null,
+    refreshing: false,
+  };
+
+  openProgress = new Animated.Value(0);
+
+  _images = {};
+
+  imageDidMount = false;
+  contentDidMount = false;
+
+  componentDidMount() {
+    this.fetchInitialData();
   }
 
   async fetchData(page = 0) {
-    const res = await fetch(`http://events-aggregator-workshop.anadea.co:8080/events?page=${page}`)
+    const res = await fetch(
+      `http://events-aggregator-workshop.anadea.co:8080/events?page=${page}`,
+    );
+
     return res.json();
   }
 
   async fetchInitialData() {
-    const responseJson = await this.fetchData(0)
-    this.setState({events: responseJson, refreshing: false, page: 1})
+    const responseJson = await this.fetchData(0);
+
+    this.setState({
+      page: 1,
+      events: responseJson,
+      refreshing: false,
+    });
   }
 
   onRefresh = async () => {
-    this.setState({refreshing: true});
-    this.fetchInitialData()
+    this.setState({ refreshing: true });
+    this.fetchInitialData();
   };
 
-
   onGetRefreshControl() {
-    const {refreshing} = this.state;
+    const { refreshing } = this.state;
 
     return (
       <RefreshControl
@@ -69,97 +89,142 @@ class EventList extends React.PureComponent {
   }
 
   onEndReached = async () => {
-    const {loading, refreshing, page} = this.state;
+    const { loading, refreshing, page } = this.state;
+
     if (loading || refreshing || page === null) {
       return;
     }
-    this.setState({loading: true});
+
+    this.setState({ loading: true });
+
     const newEvents = await this.fetchData(page);
+
     this.setState({
+      page: newEvents.length === 10 ? page + 1 : null,
       events: [...this.state.events, ...newEvents],
       loading: false,
-      page: newEvents.length === 10 ? page + 1 : null,
     });
   };
 
-  onGetFooter() {
-    const {page} = this.state;
+  onGetFooter = () => {
+    const { page } = this.state;
+
     if (page === null) {
       return null;
     }
-    return (
-      <View style={footerStyle}>
-        {loader}
-      </View>
-    )
-  }
+
+    return <View style={footerStyle}>{loader}</View>;
+  };
+
+  resetActive = () => {
+    this.imageDidMount = false;
+    this.contentDidMount = false;
+
+    this.setState({ activeEvent: null }, () => this.openProgress.setValue(0));
+  };
 
   onImageRef = (photo, imageRef) => {
     this._images[photo._id] = imageRef;
   };
 
   onGetItemLayout = (_, index) => {
-    return {length: itemHeight, offset: itemHeight * index, index};
-  }
+    return { length: itemHeight, offset: itemHeight * index, index };
+  };
 
-  keyExtractor = item => item._id;
-  
-  openListItem = obj => {
-    this.setState({openProgress: new Animated.Value(0)} , () => {
-      this.state.openProgress.interpolate({
-        inputRange: [0.005, 0.01],
-        outputRange: [1, 0]
-      })
-      this.setState({active: obj, isAnimating: true })
-      Animated.timing(this.state.openProgress, {
+  openListItem = async (activeEvent) => {
+    const sourceDimensionImage = await this.getDimensionImage(this._images[activeEvent.id]);
+
+    console.log(sourceDimensionImage);
+
+    this.setState({ activeEvent, sourceDimensionImage});
+  };
+
+  getDimensionImage = async (refImage) => {
+    const dimensionImage = await new Promise((resolve) => refImage.measure(
+      (soruceX, soruceY, width, height, pageX, pageY) =>  resolve({
+          width,
+          height,
+          pageX,
+          pageY,
+        })
+    ));
+
+    return dimensionImage;
+  };
+
+  onImageDidMount = () => {
+    this.imageDidMount = true;
+
+    this.animateImageAndContent();
+  };
+
+  onContentDidMount = () => {
+    this.contentDidMount = true;
+
+    this.animateImageAndContent();
+  };
+
+  animateImageAndContent = () => {
+    if(this.imageDidMount && this.contentDidMount) {
+      Animated.timing(this.openProgress, {
         toValue: 1,
         duration: 500,
-        useNativeDriver: true
-      }).start(() => {
-        this.setState({ isAnimating: false });
-      });
-    })
-  }
+        useNativeDriver: true,
+      }).start(() => (this.setState({ animatedAll: true })));
+    }
+  };
+
+  keyExtractor = item => item._id;
 
   render() {
-    const {events} = this.state
+    const { events } = this.state;
+
     return (
       <View style={styles.container}>
-          <FlatList
-            data={events}
-            onEndReached={this.onEndReached}
-            onEndReachedThreshold={0.5}
-            ListEmptyComponent={
-              <View style={loaderStyles}>
-                {loader}
-              </View>
-            }
-            keyExtractor={this.keyExtractor}
-            getItemLayout={this.onGetItemLayout}
-            ListFooterComponent={this.onGetFooter.bind(this)}
-            refreshControl={this.onGetRefreshControl()}
-            renderItem={({item}) => {
-              return <ListItem key={item._id} onImageRef={this.onImageRef} open={this.openListItem} item={item}/> 
-            }}
+        <FlatList
+          data={events}
+          onEndReached={this.onEndReached}
+          onEndReachedThreshold={0.5}
+          ListEmptyComponent={<View style={loaderStyles}>{loader}</View>}
+          keyExtractor={this.keyExtractor}
+          getItemLayout={this.onGetItemLayout}
+          ListFooterComponent={this.onGetFooter}
+          refreshControl={this.onGetRefreshControl()}
+          renderItem={({ item }) => {
+            return (
+              <ListItem
+                key={item._id}
+                onImageRef={this.onImageRef}
+                open={this.openListItem}
+                item={item}
+              />
+            );
+          }}
+        />
+
+        {
+          this.state.activeEvent && <Transition
+            image={this.state.activeEvent.image}
+            openProgress={this.openProgress}
+            imageDidMount={this.onImageDidMount}
+            statusBarHeight={Expo.Constants.statusBarHeight}
+            sourceDimension={this.state.sourceDimensionImage}
           />
-        <Transition
-          openProgress={this.state.openProgress}
-          photo={this.state.active}
-          sourceImageRefs={this._images}
-          isAnimating={this.state.isAnimating}
-        />
-        
-        <DetailsScreen
-          isAnimating={this.state.isAnimating}
-          openProgress={this.state.openProgress}
-          onClose={() => {this.setState({active: null})}}
-          event={this.state.active}
-          photo={this.state.active && this.state.active.id ? this._images[this.state.active.id] : null}
-        />
+        }
+
+        {
+          this.state.activeEvent &&
+          <DetailsScreen
+            event={this.state.activeEvent}
+            onClose={this.resetActive}
+            openProgress={this.openProgress}
+            animatedAll={this.props.animatedAll}
+            onContentDidMount={this.onContentDidMount}
+          />
+        }
       </View>
     );
   }
-
 }
 
 const styles = StyleSheet.create({
@@ -180,11 +245,11 @@ const styles = StyleSheet.create({
     marginRight: 10,
     borderWidth: 1,
     borderColor: '#d2d5d8',
-    borderRadius: 7
+    borderRadius: 7,
   },
   itemAnimated: {
     borderWidth: 0,
   },
 });
 
-export default EventList
+export default EventList;

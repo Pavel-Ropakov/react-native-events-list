@@ -4,134 +4,104 @@ import {
   View,
   Image,
   ListView,
+  Animated,
   Dimensions,
   TouchableOpacity,
-  Animated
 } from 'react-native';
 
 const maxWidth = Dimensions.get('window').width;
 
 export default class Transition extends React.PureComponent {
-  state = {
-    destinationDimension: {
-      width: maxWidth,
-      height: 300,
-      pageX: 0,
-      pageY: 0
-    },
-    sourceDimension: {
-      width: 0,
-      height: 0,
-      pageX: 0,
-      pageY: 0
-    }
+  destinationDimension = {
+    width: maxWidth,
+    height: 300,
+    pageX: 0,
+    pageY: 0,
   };
 
-  componentWillReceiveProps(nextProps) {
-    const { photo, sourceImageRefs } = nextProps;
+  sourceDimension = this.props.sourceDimension;
 
-    if (photo) {
-      const sourceImageRef = sourceImageRefs[photo.id];
-      sourceImageRef
-        .measure((soruceX, soruceY, width, height, pageX, pageY) => {
-          this.setState({
-            sourceDimension: {
-              width,
-              height,
-              pageX,
-              pageY
-            },
-            photo: sourceImageRef
-          });
-        });
-    } else {
-      this.setState({photo: null})
-    }
+  componentDidMount() {
+    this.props.imageDidMount();
   }
 
   render() {
-    const { openProgress } = this.props;
-    const { destinationDimension, sourceDimension, photo } = this.state;
-    if (photo) {
-      let destRightDimension = {
-        width: 0,
-        height: 0,
-        pageX: 0,
-        pageY: 0
-      };
-      let openingInitScale = 1;
+    const { openProgress, image } = this.props;
 
-      // const aspectRatio = photo.width / photo.height;
-      // const screenAspectRatio =
-      //   destinationDimension.width / destinationDimension.height;
+    const destRightDimension = {
+      width: this.destinationDimension.width,
+      height: this.destinationDimension.height,
+      pageX: this.destinationDimension.pageX,
+      pageY: this.destinationDimension.pageY
+    };
 
-      destRightDimension = {
-        width: destinationDimension.width,
-        height: destinationDimension.height,
-        pageX: destinationDimension.pageX,
-        pageY: destinationDimension.pageY
-      };
+    const translateInitX = this.sourceDimension.pageX + this.sourceDimension.width / 2;
+    const translateInitY = this.sourceDimension.pageY + this.sourceDimension.height / 2;
 
-      // if (aspectRatio - screenAspectRatio > 0) {
-      //   destRightDimension.width = aspectRatio * destRightDimension.height;
-      //   destRightDimension.pageX -=
-      //     (destRightDimension.width - destinationDimension.width) / 2;
-      // } else {
-      //   destRightDimension.height = destRightDimension.width / aspectRatio;
-      //   destRightDimension.pageY -=
-      //     (destRightDimension.height - destinationDimension.height) / 2;
-      // }
+    const translateDestX =
+      destRightDimension.pageX + destRightDimension.width / 2;
+    const translateDestY =
+      destRightDimension.pageY + destRightDimension.height / 2;
 
-      const translateInitX = sourceDimension.pageX + sourceDimension.width / 2;
-      const translateInitY = sourceDimension.pageY + sourceDimension.height / 2;
-      const translateDestX =
-        destRightDimension.pageX + destRightDimension.width / 2;
-      const translateDestY =
-        destRightDimension.pageY + destRightDimension.height / 2;
+    const openingInitTranslateX = translateInitX - translateDestX;
+    const openingInitTranslateY = translateInitY - translateDestY - this.props.statusBarHeight;
 
-      openingInitTranslateX = translateInitX - translateDestX;
-      openingInitTranslateY = translateInitY - translateDestY;
+    const openingInitScaleX = this.sourceDimension.width / destRightDimension.width;
+    const openingInitScaleY = this.sourceDimension.height / destRightDimension.height;
 
-      openingInitScale = sourceDimension.width / destRightDimension.width;
+    const opacity = openProgress.interpolate({
+      inputRange: [0, 0.995, 1],
+      outputRange: [1, 1, 0]
+    });
 
-      return (
-        <Animated.Image
-          source={photo.props.source}
-          style={{
-            backgroundColor: 'green',
-            position: 'absolute',
-            width: destRightDimension.width,
-            height: destRightDimension.height,
-            left: destRightDimension.pageX,
-            top: destRightDimension.pageY,
-            opacity: openProgress.interpolate({
-              inputRange: [0, 0.005, 0.995, 1],
-              outputRange: [0, 1, 1, 0]
-            }),
-            transform: [
-              {
-                translateX: openProgress.interpolate({
-                  inputRange: [0.01, 0.99],
-                  outputRange: [openingInitTranslateX, 0]
-                })
-              },
-              {
-                translateY: openProgress.interpolate({
-                  inputRange: [0.01, 0.99],
-                  outputRange: [openingInitTranslateY, 0]
-                })
-              },
-              {
-                scale: openProgress.interpolate({
-                  inputRange: [0.01, 0.99],
-                  outputRange: [openingInitScale, 1]
-                })
-              }
-            ]
-          }}
-        />
-      );
-    }
-    return <View />;
+    const translateX = openProgress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [openingInitTranslateX, 0]
+    });
+
+    const translateY = openProgress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [openingInitTranslateY, 0]
+    });
+
+    const scaleX = openProgress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [openingInitScaleX, 1]
+    });
+
+    const scaleY = openProgress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [openingInitScaleY, 1]
+    });
+
+    const transform = [
+      {
+        translateX,
+      },
+      {
+        translateY,
+      },
+      {
+        scaleX,
+      },
+      {
+        scaleY,
+      }
+    ];
+
+    return (
+      <Animated.Image
+        source={image}
+        style={{
+          position: 'absolute',
+          width: destRightDimension.width,
+          height: destRightDimension.height,
+          left: destRightDimension.pageX,
+          top: destRightDimension.pageY,
+          opacity,
+          transform,
+        }}
+      />
+    );
   }
 }

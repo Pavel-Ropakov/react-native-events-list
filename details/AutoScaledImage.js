@@ -1,6 +1,5 @@
 import React from 'react';
-import {Button, View, Text, StyleSheet, Linking, Dimensions, Image, ScrollView} from 'react-native';
-
+import {Image} from 'react-native';
 
 class AutoScaledImage extends React.PureComponent {
   constructor(props) {
