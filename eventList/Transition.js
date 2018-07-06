@@ -1,12 +1,7 @@
 import React from 'react';
 import {
-  Text,
-  View,
-  Image,
-  ListView,
   Animated,
   Dimensions,
-  TouchableOpacity,
 } from 'react-native';
 
 const maxWidth = Dimensions.get('window').width;

@@ -1,13 +1,10 @@
 import React from 'react';
 import {
-  Button,
   View,
   Text,
   StyleSheet,
   Linking,
   Dimensions,
-  Image,
-  ScrollView,
   TouchableOpacity,
   Animated
 } from 'react-native';
@@ -40,13 +37,6 @@ const htmlContainer = {
   borderColor: '#d2d5d8',
   backgroundColor: 'white',
   borderRadius: 7
-};
-
-const imgStyle = {
-  alignSelf: 'center',
-  resizeMode: 'cover',
-  width: maxWidth,
-  height: 300,
 };
 
 const containerStyles = {
@@ -104,7 +94,7 @@ class DetailsScreen extends React.PureComponent {
   };
 
   render() {
-    const { event, showContent } = this.state;
+    const { event } = this.state;
     const { openProgress, isAnimating } = this.props;
 
     const start = new Date(event.start_date);
@@ -135,7 +125,7 @@ class DetailsScreen extends React.PureComponent {
             position: 'absolute',
             top: 230,
             left: 30,
-            opacity: showContent,
+            opacity: this.showContent,
             zIndex: 999,
           }}
           pointerEvents={isAnimating ? 'none' : 'auto'}
@@ -160,7 +150,7 @@ class DetailsScreen extends React.PureComponent {
             position: 'absolute',
             top: 230,
             right: 30,
-            opacity: showContent,
+            opacity: this.showContent,
             zIndex: 999,
           }}
           pointerEvents={isAnimating ? 'none' : 'auto'}
@@ -194,7 +184,7 @@ class DetailsScreen extends React.PureComponent {
             style={[
               styles.body,
               {
-                opacity: showContent,
+                opacity: this.showContent,
                 transform: [
                   {
                     translateY: openProgress.interpolate({

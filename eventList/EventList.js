@@ -165,12 +165,15 @@ class EventList extends React.PureComponent {
   };
 
   animateImageAndContent = () => {
+    this.setState({ animatedAll: false })
     if(this.imageDidMount && this.contentDidMount) {
       Animated.timing(this.openProgress, {
         toValue: 1,
         duration: 500,
         useNativeDriver: true,
-      }).start(() => (this.setState({ animatedAll: true })));
+      }).start(() => (
+        setTimeout(() => this.setState({ animatedAll: true }) , 100)
+      ));
     }
   };
 
@@ -218,7 +221,7 @@ class EventList extends React.PureComponent {
             event={this.state.activeEvent}
             onClose={this.resetActive}
             openProgress={this.openProgress}
-            animatedAll={this.props.animatedAll}
+            animatedAll={this.state.animatedAll}
             onContentDidMount={this.onContentDidMount}
           />
         }
