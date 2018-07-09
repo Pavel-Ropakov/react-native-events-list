@@ -1,16 +1,12 @@
 import React from 'react';
 import Expo from 'expo';
 import {
-  Button,
   View,
-  Text,
   StyleSheet,
   FlatList,
-  Image,
   Animated,
   RefreshControl,
   ActivityIndicator,
-  TouchableWithoutFeedback,
 } from 'react-native';
 import ListItem from './ListItem';
 import DetailsScreen from '../details/Details';

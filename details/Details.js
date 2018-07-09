@@ -14,6 +14,8 @@ import { storage } from "../index";
 import * as Alert from "react-native/Libraries/Alert/Alert";
 import { Ionicons } from '@expo/vector-icons';
 import Expo from "expo";
+import Permissions from "../permissions";
+import Calendar from "../calendar";
 
 const mapContainer = {
   width: '100%', height: 200, flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
@@ -93,6 +95,27 @@ class DetailsScreen extends React.PureComponent {
     }
   };
 
+  onAddToCalendar = async () => {
+    const granted = await Permissions.getCalendarPermissions();
+
+    if (!granted) {
+      return;
+    }
+
+    const { event } = this.state;
+    const { title, address, start_date, finish_date, link } = event;
+
+    const notes = `Adress: ${address}\nLink: ${link}`;
+
+    await Calendar.addEvent({
+      title,
+      notes,
+      startDate: start_date,
+      finishDate: finish_date,
+    });
+  };
+
+
   render() {
     const { event } = this.state;
     const { openProgress, isAnimating } = this.props;
@@ -156,7 +179,7 @@ class DetailsScreen extends React.PureComponent {
           pointerEvents={isAnimating ? 'none' : 'auto'}
         >
           <TouchableOpacity
-            onPress={this.props.onClose}
+            onPress={this.onAddToCalendar}
             style={{
               alignItems: 'center',
               justifyContent: 'center',
@@ -197,7 +220,7 @@ class DetailsScreen extends React.PureComponent {
               }
             ]}
           >
-            <View style={[containerStyles, { margin: 10, marginBottom: 0, textAlign: 'center' }]}>
+            <View style={[containerStyles, { margin: 10, marginBottom: 0}]}>
               <Text style={textStyles.titleText}>{event.title}</Text>
               <Text>Start: {`${startdate} ${event.start_time}`}</Text>
               <Text>End: {`${enddate} ${event.finish_time}`}</Text>
