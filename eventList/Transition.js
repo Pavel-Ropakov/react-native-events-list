@@ -4,7 +4,7 @@ import {
   Dimensions,
 } from 'react-native';
 
-const maxWidth = Dimensions.get('window').width;
+export const maxWidth = Dimensions.get('window').width;
 
 export default class Transition extends React.PureComponent {
   destinationDimension = {

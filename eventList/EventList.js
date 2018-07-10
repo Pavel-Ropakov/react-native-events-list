@@ -11,6 +11,9 @@ import {
 import ListItem from './ListItem';
 import DetailsScreen from '../details/Details';
 import Transition from './Transition';
+import {SearchBar} from "react-native-elements";
+import {maxWidth} from "./Transition";
+import { Ionicons } from '@expo/vector-icons';
 
 export const colorPrimary = '#DC734A';
 const itemHeight = 130;
@@ -175,11 +178,27 @@ class EventList extends React.PureComponent {
 
   keyExtractor = item => item._id;
 
+  onClearSearch = () => {
+  
+  }
+  
+  onSearch = (text) => {
+    
+  }
+
   render() {
     const { events } = this.state;
 
     return (
       <View style={styles.container}>
+        <SearchBar
+          clearIcon={{ color: '#86939e', name: 'clear' }}
+          lightTheme
+          containerStyle={{width: maxWidth}}
+          onChangeText={this.onSearch}
+          onClearText={this.onClearSearch}
+          placeholder='Search' 
+        />
         <FlatList
           data={events}
           onEndReached={this.onEndReached}
