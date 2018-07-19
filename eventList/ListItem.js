@@ -1,13 +1,10 @@
 import React from 'react';
 import {
-  Button,
   View,
   Text,
   StyleSheet,
-  FlatList,
   Image,
   Animated,
-  RefreshControl,
   ActivityIndicator, TouchableWithoutFeedback
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

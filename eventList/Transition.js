@@ -6,32 +6,30 @@ import {
 
 export const maxWidth = Dimensions.get('window').width;
 
+const destinationDimension = {
+  width: maxWidth,
+  height: 300,
+  pageX: 0,
+  pageY: 0,
+};
+
 export default class Transition extends React.PureComponent {
-  destinationDimension = {
-    width: maxWidth,
-    height: 300,
-    pageX: 0,
-    pageY: 0,
-  };
-
-  sourceDimension = this.props.sourceDimension;
-
   componentDidMount() {
     this.props.imageDidMount();
   }
 
   render() {
-    const { openProgress, image } = this.props;
+    const { openProgress, image, sourceDimension } = this.props;
 
     const destRightDimension = {
-      width: this.destinationDimension.width,
-      height: this.destinationDimension.height,
-      pageX: this.destinationDimension.pageX,
-      pageY: this.destinationDimension.pageY
+      width: destinationDimension.width,
+      height: destinationDimension.height,
+      pageX: destinationDimension.pageX,
+      pageY: destinationDimension.pageY
     };
 
-    const translateInitX = this.sourceDimension.pageX + this.sourceDimension.width / 2;
-    const translateInitY = this.sourceDimension.pageY + this.sourceDimension.height / 2;
+    const translateInitX = sourceDimension.pageX + sourceDimension.width / 2;
+    const translateInitY = sourceDimension.pageY + sourceDimension.height / 2;
 
     const translateDestX =
       destRightDimension.pageX + destRightDimension.width / 2;
@@ -41,8 +39,8 @@ export default class Transition extends React.PureComponent {
     const openingInitTranslateX = translateInitX - translateDestX;
     const openingInitTranslateY = translateInitY - translateDestY - this.props.statusBarHeight;
 
-    const openingInitScaleX = this.sourceDimension.width / destRightDimension.width;
-    const openingInitScaleY = this.sourceDimension.height / destRightDimension.height;
+    const openingInitScaleX = sourceDimension.width / destRightDimension.width;
+    const openingInitScaleY = sourceDimension.height / destRightDimension.height;
 
     const opacity = openProgress.interpolate({
       inputRange: [0, 0.995, 1],
@@ -83,19 +81,21 @@ export default class Transition extends React.PureComponent {
         scaleY,
       }
     ];
+    
+    const imgStyle = {
+      position: 'absolute',
+      width: destRightDimension.width,
+      height: destRightDimension.height,
+      left: destRightDimension.pageX,
+      top: destRightDimension.pageY,
+      opacity,
+      transform,
+    }
 
     return (
       <Animated.Image
         source={image}
-        style={{
-          position: 'absolute',
-          width: destRightDimension.width,
-          height: destRightDimension.height,
-          left: destRightDimension.pageX,
-          top: destRightDimension.pageY,
-          opacity,
-          transform,
-        }}
+        style={imgStyle}
       />
     );
   }

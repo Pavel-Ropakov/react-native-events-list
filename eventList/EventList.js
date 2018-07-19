@@ -6,24 +6,29 @@ import {
   FlatList,
   Animated,
   RefreshControl,
-  ActivityIndicator,
+  ActivityIndicator, Dimensions,
 } from 'react-native';
 import ListItem from './ListItem';
 import DetailsScreen from '../details/Details';
 import Transition from './Transition';
-import {SearchBar} from "react-native-elements";
 import {maxWidth} from "./Transition";
 import { Ionicons } from '@expo/vector-icons';
 
 export const colorPrimary = '#DC734A';
 const itemHeight = 130;
+const screenWidth = (Dimensions.get('window').width - 20)
+const imgWidth = screenWidth * 0.4
+const imgX = screenWidth * 0.6
 export const loader = <ActivityIndicator size="large" color={colorPrimary}/>;
+const Scroll = Animated.createAnimatedComponent(FlatList)
+
 const footerStyle = {
   height: 100,
   width: '100%',
   alignItems: 'center',
   justifyContent: 'center',
 };
+
 const loaderStyles = {
   height: '100%',
   width: '100%',
@@ -38,8 +43,11 @@ class EventList extends React.PureComponent {
     loading: false,
     touchedId: null,
     refreshing: false,
+    animatedScrollY: new Animated.Value(0),
+    // search: ''
   };
 
+  animatedScrollY = 0
   openProgress = new Animated.Value(0);
 
   _images = {};
@@ -55,7 +63,6 @@ class EventList extends React.PureComponent {
     const res = await fetch(
       `http://events-aggregator-workshop.anadea.co:8080/events?page=${page}`,
     );
-
     return res.json();
   }
 
@@ -130,25 +137,22 @@ class EventList extends React.PureComponent {
     return { length: itemHeight, offset: itemHeight * index, index };
   };
 
-  openListItem = async (activeEvent) => {
-    const sourceDimensionImage = await this.getDimensionImage(this._images[activeEvent.id]);
+  openListItem = (activeEvent, index) => {
+    const sourceDimensionImage = this.getDimensionImage(this._images[activeEvent.id], index);
 
     console.log(sourceDimensionImage);
 
     this.setState({ activeEvent, sourceDimensionImage});
   };
 
-  getDimensionImage = async (refImage) => {
-    const dimensionImage = await new Promise((resolve) => refImage.measure(
-      (soruceX, soruceY, width, height, pageX, pageY) =>  resolve({
-          width,
-          height,
-          pageX,
-          pageY,
-        })
-    ));
-
-    return dimensionImage;
+  getDimensionImage = (refImage, index) => {
+    const page1Y = (itemHeight + 10) * index - this.animatedScrollY
+    return {
+      width: imgWidth,
+      height: itemHeight,
+      pageX: imgX,
+      pageY: page1Y,
+    };
   };
 
   onImageDidMount = () => {
@@ -178,28 +182,56 @@ class EventList extends React.PureComponent {
 
   keyExtractor = item => item._id;
 
-  onClearSearch = () => {
-  
+  // onClearSearch = () => {
+  //   this.setState({search: ''})
+  //   this.fetchInitialData()
+  // }
+  //
+  // onSearch = async (text) => {
+  //   if(text && text.length) {
+  //     this.setState({ loading: true, search: text });
+  //
+  //     const newEvents = await this.fetchData(0);
+  //
+  //     this.setState({
+  //       page: newEvents.length === 10 ? 1 : 0,
+  //       events: [ ...newEvents],
+  //       loading: false,
+  //     });
+  //   } else {
+  //     this.fetchInitialData()
+  //   }
+  //  
+  // }
+
+  _onScroll123 = e => {
+    this.animatedScrollY = e.nativeEvent.contentOffset.y;
   }
   
-  onSearch = (text) => {
-    
-  }
+  onScroll = Animated.event(
+    [{ nativeEvent: { contentOffset: { y: this.state.animatedScrollY } } }],
+    { listener: this._onScroll123, useNativeDriver: true }
+  );
+
 
   render() {
     const { events } = this.state;
+    
+    // const searchBar =  <SearchBar
+    //   clearIcon={{ color: '#86939e', name: 'clear' }}
+    //   lightTheme
+    //   containerStyle={{width: maxWidth}}
+    //   onChangeText={this.onSearch}
+    //   onClearText={this.onClearSearch}
+    //   placeholder='Search'
+    // />
 
     return (
       <View style={styles.container}>
-        <SearchBar
-          clearIcon={{ color: '#86939e', name: 'clear' }}
-          lightTheme
-          containerStyle={{width: maxWidth}}
-          onChangeText={this.onSearch}
-          onClearText={this.onClearSearch}
-          placeholder='Search' 
-        />
-        <FlatList
+       
+        <Scroll
+          onScroll={this.onScroll}
+          scrollEventThrottle={16}
           data={events}
           onEndReached={this.onEndReached}
           onEndReachedThreshold={0.5}
@@ -208,16 +240,14 @@ class EventList extends React.PureComponent {
           getItemLayout={this.onGetItemLayout}
           ListFooterComponent={this.onGetFooter}
           refreshControl={this.onGetRefreshControl()}
-          renderItem={({ item }) => {
-            return (
-              <ListItem
-                key={item._id}
-                onImageRef={this.onImageRef}
-                open={this.openListItem}
-                item={item}
-              />
-            );
-          }}
+          renderItem={({ item, index }) => (
+            <ListItem
+              key={item._id}
+              onImageRef={this.onImageRef}
+              open={(li) => this.openListItem(li, index)}
+              item={item}
+            />
+          )}
         />
 
         {
