@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, View, Text, StyleSheet, Linking, Dimensions, Image, ScrollView} from 'react-native';
+import {View, Dimensions} from 'react-native';
 import HTML from "react-native-render-html";
 import {compose, withState} from "recompose";
 import {loader as loaderIcon} from '../eventList/EventList'
@@ -12,16 +12,14 @@ const imgViewStyles = {    justifyContent: 'center',
 const screenWidth = Dimensions.get('window').width
 const contentSize = screenWidth * 0.9 - 20
 
-
-export const TEXT_TAGS_HASH = {
+const TEXT_TAGS_HASH = {
   undefined: true,
   ...TEXT_TAGS.reduce((obj, tag) => ({ ...obj, [tag]: true }), {}),
 };
 
-export const MIXED_TAGS_HASH = {
+const MIXED_TAGS_HASH = {
   ...MIXED_TAGS.reduce((obj, tag) => ({ ...obj, [tag]: true }), {}),
 };
-
 
 const renderers = {
   img: (attribs, children, cssStyles, {key}) => {
@@ -35,19 +33,23 @@ const renderers = {
   },
 }
 
+const ignoredStyles = ['font-family', 'color', 'text-align']
+const fontStyle = {
+  color: 'rgb(51, 51, 51)',
+  fontSize: 14,
+}
+
+const childrenAreTextTags = children => children.every(
+  node =>
+    TEXT_TAGS_HASH[node.name] ||
+    (MIXED_TAGS_HASH[node.name] && Html.childrenAreTextTags(node.children))
+);
+
 class Html extends React.PureComponent {
   constructor(props) {
     super(props)
     this.htmlParsingFinished = this.htmlParsingFinished.bind(this)
   }
-
-  static childrenAreTextTags = children =>
-    children.every(
-      node =>
-        TEXT_TAGS_HASH[node.name] ||
-        (MIXED_TAGS_HASH[node.name] && Html.childrenAreTextTags(node.children))
-    );
-
 
   htmlParsingFinished() {
     this.props.setHtmlReady(true)
@@ -56,7 +58,7 @@ class Html extends React.PureComponent {
   onAlterChildren (node) {
     const nodeChildren = [];
 
-    if (TEXT_TAGS_HASH[node.name] && !Html.childrenAreTextTags(node.children)) {
+    if (TEXT_TAGS_HASH[node.name] && !childrenAreTextTags(node.children)) {
       let child = node.children[0];
 
       let children = [];
@@ -76,7 +78,7 @@ class Html extends React.PureComponent {
       while (child !== null) {
         if (
           TEXT_TAGS_HASH[child.name] ||
-          (MIXED_TAGS_HASH[child.name] && Html.childrenAreTextTags(child.children))
+          (MIXED_TAGS_HASH[child.name] && childrenAreTextTags(child.children))
         ) {
           children[children.length] = child;
           child.parent = wrapperNode;
@@ -115,13 +117,9 @@ class Html extends React.PureComponent {
 
   render() {
     const {htmlReady, content} = this.props
-    const fontStyle = {
-      color: 'rgb(51, 51, 51)',
-      fontSize: 14,
-    }
+    
     
     const loader = htmlReady === false ? loaderIcon : null
-    
 
     return (
       <React.Fragment>
@@ -132,7 +130,7 @@ class Html extends React.PureComponent {
           content &&
           <HTML
             alterChildren={this.onAlterChildren}
-            ignoredStyles={['font-family']}
+            ignoredStyles={ignoredStyles}
             onParsed={this.htmlParsingFinished}
             renderers={renderers}
             html={content}

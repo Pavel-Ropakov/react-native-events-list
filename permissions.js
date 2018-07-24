@@ -1,4 +1,4 @@
-import { Alert, Linking } from 'react-native';
+import { Alert } from 'react-native';
 import { Permissions, IntentLauncherAndroid } from 'expo';
 
 class PermissionsService {
@@ -27,9 +27,9 @@ class PermissionsService {
 
   static _openSettings(postfix) {
     Alert.alert(
-      `Нет прав для работы с ${postfix}`,
-      'Открыть настройки?',
-      [{ text: 'Нет' }, { text: 'Да', onPress: PermissionsService._onOpenSettings }],
+      `No rights to work with ${postfix}`,
+      'Open settings?',
+      [{ text: 'No' }, { text: 'Yes', onPress: PermissionsService._onOpenSettings }],
       { cancelable: false }
     );
   }

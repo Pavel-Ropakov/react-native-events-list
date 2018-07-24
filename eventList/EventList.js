@@ -11,7 +11,6 @@ import {
 import ListItem from './ListItem';
 import DetailsScreen from '../details/Details';
 import Transition from './Transition';
-import {maxWidth} from "./Transition";
 import { Ionicons } from '@expo/vector-icons';
 
 export const colorPrimary = '#DC734A';
@@ -29,6 +28,8 @@ const footerStyle = {
   justifyContent: 'center',
 };
 
+const keyExtractor = item => item._id
+
 const loaderStyles = {
   height: '100%',
   width: '100%',
@@ -37,26 +38,49 @@ const loaderStyles = {
 };
 
 class EventList extends React.PureComponent {
-  state = {
-    page: null,
-    events: [],
-    loading: false,
-    touchedId: null,
-    refreshing: false,
-    animatedScrollY: new Animated.Value(0),
-    // search: ''
-  };
+  
 
-  animatedScrollY = 0
-  openProgress = new Animated.Value(0);
+  constructor(props) {
+    super(props)
 
-  _images = {};
+    this.state = {
+      page: null,
+      events: [],
+      loading: false,
+      touchedId: null,
+      refreshing: false,
+      animatedScrollY: new Animated.Value(0),
+    };
 
-  imageDidMount = false;
-  contentDidMount = false;
+    this.animatedScrollY = 0
+    this.openProgress = new Animated.Value(0);
+
+    this._images = {};
+
+    this.imageDidMount = false;
+    this.contentDidMount = false;
+
+    
+    this.onScroll = Animated.event(
+      [{ nativeEvent: { contentOffset: { y: this.state.animatedScrollY } } }],
+      { listener: this.handleScroll, useNativeDriver: true }
+    )
+    
+    this.onGetFooter = this.onGetFooter.bind(this)
+    this.onImageRef = this.onImageRef.bind(this)
+    this.onImageDidMount = this.onImageDidMount.bind(this)
+    this.onContentDidMount = this.onContentDidMount.bind(this)
+    this.resetActive = this.resetActive.bind(this)
+    this.onRefresh = this.onRefresh.bind(this)
+    this.onEndReached = this.onEndReached.bind(this)
+  }
 
   componentDidMount() {
     this.fetchInitialData();
+  }
+
+  handleScroll(e) {
+    this.animatedScrollY = e.nativeEvent.contentOffset.y;
   }
 
   async fetchData(page = 0) {
@@ -76,14 +100,13 @@ class EventList extends React.PureComponent {
     });
   }
 
-  onRefresh = async () => {
+  onRefresh() {
     this.setState({ refreshing: true });
     this.fetchInitialData();
-  };
+  }
 
   onGetRefreshControl() {
     const { refreshing } = this.state;
-
     return (
       <RefreshControl
         colors={[colorPrimary]}
@@ -94,17 +117,13 @@ class EventList extends React.PureComponent {
     );
   }
 
-  onEndReached = async () => {
+  async onEndReached() {
     const { loading, refreshing, page } = this.state;
-
     if (loading || refreshing || page === null) {
       return;
     }
-
     this.setState({ loading: true });
-
     const newEvents = await this.fetchData(page);
-
     this.setState({
       page: newEvents.length === 10 ? page + 1 : null,
       events: [...this.state.events, ...newEvents],
@@ -112,40 +131,30 @@ class EventList extends React.PureComponent {
     });
   };
 
-  onGetFooter = () => {
-    const { page } = this.state;
-
-    if (page === null) {
-      return null;
-    }
-
-    return <View style={footerStyle}>{loader}</View>;
+  onGetFooter() {
+    return this.state.page === null ? null : <View style={footerStyle}>{loader}</View>;
   };
 
-  resetActive = () => {
+  resetActive() {
     this.imageDidMount = false;
     this.contentDidMount = false;
-
     this.setState({ activeEvent: null }, () => this.openProgress.setValue(0));
-  };
+  }
 
-  onImageRef = (photo, imageRef) => {
+  onImageRef (photo, imageRef) {
     this._images[photo._id] = imageRef;
-  };
+  }
 
-  onGetItemLayout = (_, index) => {
+  onGetItemLayout (_, index) {
     return { length: itemHeight, offset: itemHeight * index, index };
-  };
-
-  openListItem = (activeEvent, index) => {
+  }
+  
+  openListItem (activeEvent, index) {
     const sourceDimensionImage = this.getDimensionImage(this._images[activeEvent.id], index);
-
-    console.log(sourceDimensionImage);
-
     this.setState({ activeEvent, sourceDimensionImage});
-  };
+  }
 
-  getDimensionImage = (refImage, index) => {
+  getDimensionImage(refImage, index) {
     const page1Y = (itemHeight + 10) * index - this.animatedScrollY
     return {
       width: imgWidth,
@@ -155,19 +164,17 @@ class EventList extends React.PureComponent {
     };
   };
 
-  onImageDidMount = () => {
+  onImageDidMount () {
     this.imageDidMount = true;
-
     this.animateImageAndContent();
-  };
+  }
 
-  onContentDidMount = () => {
+  onContentDidMount() {
     this.contentDidMount = true;
-
     this.animateImageAndContent();
   };
 
-  animateImageAndContent = () => {
+  animateImageAndContent() {
     this.setState({ animatedAll: false })
     if(this.imageDidMount && this.contentDidMount) {
       Animated.timing(this.openProgress, {
@@ -178,57 +185,13 @@ class EventList extends React.PureComponent {
         setTimeout(() => this.setState({ animatedAll: true }) , 100)
       ));
     }
-  };
-
-  keyExtractor = item => item._id;
-
-  // onClearSearch = () => {
-  //   this.setState({search: ''})
-  //   this.fetchInitialData()
-  // }
-  //
-  // onSearch = async (text) => {
-  //   if(text && text.length) {
-  //     this.setState({ loading: true, search: text });
-  //
-  //     const newEvents = await this.fetchData(0);
-  //
-  //     this.setState({
-  //       page: newEvents.length === 10 ? 1 : 0,
-  //       events: [ ...newEvents],
-  //       loading: false,
-  //     });
-  //   } else {
-  //     this.fetchInitialData()
-  //   }
-  //  
-  // }
-
-  _onScroll123 = e => {
-    this.animatedScrollY = e.nativeEvent.contentOffset.y;
   }
   
-  onScroll = Animated.event(
-    [{ nativeEvent: { contentOffset: { y: this.state.animatedScrollY } } }],
-    { listener: this._onScroll123, useNativeDriver: true }
-  );
-
 
   render() {
     const { events } = this.state;
-    
-    // const searchBar =  <SearchBar
-    //   clearIcon={{ color: '#86939e', name: 'clear' }}
-    //   lightTheme
-    //   containerStyle={{width: maxWidth}}
-    //   onChangeText={this.onSearch}
-    //   onClearText={this.onClearSearch}
-    //   placeholder='Search'
-    // />
-
     return (
       <View style={styles.container}>
-       
         <Scroll
           onScroll={this.onScroll}
           scrollEventThrottle={16}
@@ -236,7 +199,7 @@ class EventList extends React.PureComponent {
           onEndReached={this.onEndReached}
           onEndReachedThreshold={0.5}
           ListEmptyComponent={<View style={loaderStyles}>{loader}</View>}
-          keyExtractor={this.keyExtractor}
+          keyExtractor={keyExtractor}
           getItemLayout={this.onGetItemLayout}
           ListFooterComponent={this.onGetFooter}
           refreshControl={this.onGetRefreshControl()}

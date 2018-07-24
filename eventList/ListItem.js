@@ -29,41 +29,22 @@ const options = {weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
 class ListItem extends React.PureComponent {
   constructor(props) {
     super(props)
-
-    this.animatedScale = new Animated.Value(1)
-    this.onPressIn = this.onPressIn.bind(this)
-    this.onPressOut = this.onPressOut.bind(this)
-  }
-
-  onPressIn() {
-    springAnimation(this.animatedScale, {toValue: 0.95});
-  }
-
-  onPressOut() {
-    springAnimation(this.animatedScale, {toValue: 1});
   }
 
   render() {
     const {item, open} = this.props
-    const animatedStyle = {
-      transform: [{scale: this.animatedScale}],
-    }
     const today = new Date(item.start_date)
-
     const string = today.toLocaleDateString("en-US", options)
-
     const imgScr = {uri: item.hero_image_url}
-
+    const itemStyle = [styles.item]
     return (
       <TouchableWithoutFeedback
         onPress={() => {
           open({id: item._id, eventTitle: item.title, image: imgScr})
         }}
-        // onPressIn={this.onPressIn}
-        // onPressOut={this.onPressOut}
         delayPressOut={100}
       >
-        <Animated.View style={[styles.item, animatedStyle, styles.itemAnimated]}>
+        <Animated.View style={itemStyle}>
           <View style={containerStyle}>
             <Text style={textStyle}>{item.title}</Text>
             <View style={timeStyle}>
@@ -97,23 +78,6 @@ const styles = StyleSheet.create({
     borderRadius: 7
   }
 });
-
-export function springAnimation(value, options) {
-  const {toValue, tension, friction, autoplay = true, useNativeDriver = true} = options;
-
-  const animated = Animated.spring(value, {
-    toValue,
-    tension,
-    friction,
-    useNativeDriver,
-  })
-
-  if (autoplay) {
-    animated.start();
-  }
-
-  return animated;
-}
 
 
 export default ListItem

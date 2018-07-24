@@ -12,7 +12,7 @@ class CalendarService {
       if (!calendar) {
         Alert.alert(
           'Event not added!',
-          'No calendar to add.',
+          'No calendar to add event.',
           [{ text: 'Ok' }]
         );
 
@@ -24,7 +24,7 @@ class CalendarService {
       if (similarEvent) {
         Alert.alert(
           'Already added',
-          'Event has already added',
+          'Event has already added to calendar',
           [{ text: 'Ok' }]);
 
         return;
