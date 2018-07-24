@@ -49,21 +49,17 @@ class EventList extends React.PureComponent {
       loading: false,
       touchedId: null,
       refreshing: false,
-      animatedScrollY: new Animated.Value(0),
     };
 
     this.animatedScrollY = 0
+    this.animatedScrollYObj = new Animated.Value(0)
     this.openProgress = new Animated.Value(0);
-
     this._images = {};
-
     this.imageDidMount = false;
     this.contentDidMount = false;
-
-    
     this.onScroll = Animated.event(
-      [{ nativeEvent: { contentOffset: { y: this.state.animatedScrollY } } }],
-      { listener: this.handleScroll, useNativeDriver: true }
+      [{ nativeEvent: { contentOffset: { y: this.animatedScrollYObj } } }],
+      { listener: (e) => { this.animatedScrollY = e.nativeEvent.contentOffset.y; }, useNativeDriver: true }
     )
     
     this.onGetFooter = this.onGetFooter.bind(this)
@@ -77,10 +73,6 @@ class EventList extends React.PureComponent {
 
   componentDidMount() {
     this.fetchInitialData();
-  }
-
-  handleScroll(e) {
-    this.animatedScrollY = e.nativeEvent.contentOffset.y;
   }
 
   async fetchData(page = 0) {
@@ -150,19 +142,19 @@ class EventList extends React.PureComponent {
   }
   
   openListItem (activeEvent, index) {
-    const sourceDimensionImage = this.getDimensionImage(this._images[activeEvent.id], index);
+    const sourceDimensionImage =  this.getDimensionImage(this._images[activeEvent.id], index);
     this.setState({ activeEvent, sourceDimensionImage});
   }
 
   getDimensionImage(refImage, index) {
-    const page1Y = (itemHeight + 10) * index - this.animatedScrollY
+    const page1Y = (itemHeight + 10) * (index) - this.animatedScrollY
     return {
       width: imgWidth,
       height: itemHeight,
       pageX: imgX,
       pageY: page1Y,
     };
-  };
+  }
 
   onImageDidMount () {
     this.imageDidMount = true;

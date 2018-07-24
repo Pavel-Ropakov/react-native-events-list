@@ -42,7 +42,7 @@ const fontStyle = {
 const childrenAreTextTags = children => children.every(
   node =>
     TEXT_TAGS_HASH[node.name] ||
-    (MIXED_TAGS_HASH[node.name] && Html.childrenAreTextTags(node.children))
+    (MIXED_TAGS_HASH[node.name] && childrenAreTextTags(node.children))
 );
 
 class Html extends React.PureComponent {
